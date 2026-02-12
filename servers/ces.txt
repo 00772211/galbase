@@ -1,0 +1,1 @@
+SELECT title, uid, date FROM `topics_1-2_2` WHERE (title LIKE '%彼氏彼女%' OR content LIKE '%彼氏彼女%') AND tid IN (SELECT tid FROM `topics_1-2_2` WHERE tid=-1822);

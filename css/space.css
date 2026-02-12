@@ -1,0 +1,280 @@
+.main_board main {
+	display: flex;
+	max-height: 50%;
+}
+
+.left {
+	padding: 10px;
+	width: 50%;
+	box-sizing: border-box;
+}
+
+.left .split {
+	position: relative;
+	padding: 2px;
+	margin-top: 10px;
+	width: 100%;
+	overflow: hidden;
+	box-sizing: border-box;
+	background-color: #4f65bd;
+}
+
+.split .shool_logo {
+	float: left;
+}
+
+.split .name {
+	position: absolute;
+	left: 60px;
+	top: 50%;
+	transform: translate(0%, -50%);
+	font-size: 1.7cqw;
+    color: white;
+    font-weight: 700;
+	text-shadow: 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5);
+}
+
+.split .telescope {
+	float: right;
+	height: 48px;
+}
+
+.card {
+	position: relative;
+	padding-top: 2px;
+	width: 100%;
+	border-radius: 10px;
+	background-color: #E7EAF2;
+}
+
+.card .info {
+	display: flex;
+	padding: 0 10px 0 10px;
+	width: 100%;
+	height: auto;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+.card .avatar {
+	float: left;
+	width: 30%;
+}
+
+.card .avatar img {
+	width: 100%;
+    border: white 6px solid;
+    border-radius: 15%;
+    transform: scale(0.95);
+    box-sizing: border-box;
+}
+
+.card .avatar:fullscreen {
+	border: 0px;
+}
+
+.card .info .student {
+	display: flex;
+	width: 70%;
+	font-size: 1.5cqw;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.student span {
+	display: inline-block;
+	padding: 0 2px 0 2px;
+	width: 100%;
+	border-bottom: 1px dashed #888888;
+}
+
+.card .footer {
+	text-align: center;
+	font-size: 1.2cqw;
+}
+
+.card .footer {
+	padding: 5px 60px 40px 60px;
+}
+
+.card .footer .reg {
+	float: left;
+}
+
+.card .footer .last {
+	float: right;
+}
+
+
+
+
+
+
+
+
+
+
+
+.right {
+	display: flex;
+	padding: 10px;
+	width: 50%;
+}
+
+.window {
+	padding: 10px;
+	width: 100%;
+	max-height: 100%;
+	border-radius: 10px;
+	background-color: #E7EAF2;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+.window .title {
+	width: 100%;
+	padding: 5px;
+	font-size: 1.7cqw;
+    color: white;
+	text-align: center;
+    font-weight: 700;
+	text-shadow: 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5);
+	border-bottom: 1px dashed #888888;
+}
+
+.window .content {
+	max-height: 100px;
+	overflow-y: scroll;
+	
+}
+
+
+
+
+.collection, .best_works {
+	margin: 10px;
+	padding: 10px;
+	width: 100%;
+	border-radius: 10px;
+	background-color: #E7EAF2;
+}
+
+.collection .title, .best_works .title {
+	display: inline-block;
+	width: 100%;
+	font-size: 1.7cqw;
+    color: white;
+	text-align: center;
+    font-weight: 700;
+	text-shadow: 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5);
+}
+
+.collection .topics {
+	max-height: 90%;
+	overflow-y: scroll;
+}
+
+.best_works_f {
+	max-height: none !important;
+}
+
+.best_works ul li {
+	margin: 2px;
+	float: left;
+	padding: 5px;
+	width: calc(20% - 4px);
+	border-radius: 5px;
+	box-sizing: border-box;
+	overflow: hidden;
+	background-color: #f5f6f7;
+}
+
+.best_works .cover {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 16/10;
+	border-radius: 5px 5px 0 0;
+	overflow: hidden;
+}
+
+.best_works .cover .func {
+	width: 100%;
+	position: absolute;
+	visibility: hidden;
+	background-color: aqua;
+}
+
+.best_works .cover:hover .func {
+	visibility: visible;
+}
+
+.best_works .cover .move {
+	left: 0;
+	position: absolute;
+	cursor: pointer;
+	background-color: #E7EAF2;
+}
+
+.best_works .cover .remove {
+	right: 0;
+	position: absolute;
+	cursor: pointer;
+	background-color: #E7EAF2;
+}
+
+.best_works .cover img {
+	width: 111%;
+	cursor: pointer;
+}
+
+.best_works ul li a {
+	height: 2.7cqw;
+	color: #000;
+	font-size: 1cqw;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+.add_story {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.add_story .split {
+	border-bottom: 1px dashed #888888;
+}
+
+.add_story .result {
+	display: flex;
+	padding: 5px;
+	height: auto;
+	justify-content: center;
+	align-items: center;
+	border-radius: 0 0 5px 5px;
+	background-color: #f5f6f7;
+	
+}
+
+.add_story .result:hover {
+	cursor: pointer;
+	background-color: rgba(189, 240, 160, .5);
+}
+
+.add_story .result img {
+	float: left;
+	width: 40%;
+}
+
+.add_story .result p {
+	float: left;
+	padding: 5px;
+	width: 60%;
+	height: auto;
+	justify-content: center;
+	align-items: center;
+}
+
+

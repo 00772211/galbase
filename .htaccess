@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 如果请求的文件或目录不存在
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # 匹配 `/topic/{tid}` 
+    RewriteRule ^topic/([-0-9]+)$ view_topic.php?tid=$1
+    
+    # 匹配 `/forum.php/{fid}/{page}`
+    RewriteRule ^forum/([-0-9]+)/([0-9]+)$ forum.php?fid=$1&page=$2 
+
+    # 匹配 `/forum.php/{fid}/{page}/{mode}`
+    RewriteRule ^forums/([-0-9]+)/([0-9]+)/([A-z]+)$ forum.php?fid=$1&page=$2&mode=$3
+
+    # 匹配 `/space/{uid}` 
+    RewriteRule ^space/([0-9]+)$ space.php?uid=$1
+</IfModule>

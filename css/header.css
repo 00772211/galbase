@@ -1,0 +1,155 @@
+.header {
+	position: sticky;
+	top: 0px;
+	width: 100%;
+	height: 5%;
+	background-color: rgba(255, 255, 255, .5);
+	border-radius: 0 0 10px 10px;
+	box-shadow: 0px 0px 5px rgb(0,0,0, .6);
+	z-index: 100;
+}
+
+.header .logo {
+	float: left;
+	height: 100%;
+	cursor: pointer;
+	-webkit-user-drag: none;
+	-moz-user-drag: none;
+	-o-user-drag: none;
+	-ms-user-drag: none;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	-ms-user-select: none;
+}
+
+.header .search {
+	float: left;
+	width: 20%;
+	height: 100%;
+	margin-left: 1%;
+}
+
+.header .search input {
+	float: left;
+	margin-top: 1.4%;
+	height: 80%;
+	width: 85%;
+	padding-top: 1%;
+    background-color: rgba(255, 255, 255, .8);
+	border: 0;
+    border-radius: 10px 0 0 10px;
+    border-color: #8fc1f2;
+	text-indent: 1em;
+	outline: none;
+}
+
+.header .search span {
+	float: left;
+	margin-top: 1.4%;
+	height: 80%;
+	width: 15%;
+	border-radius: 0 10px 10px 0;
+	cursor: pointer;
+	background: #7C56E2 url(/data/imgs/search.png) no-repeat center center;
+}
+
+.user_dropdown {
+	display: block;
+	float: right;
+	position: relative;
+	margin-left: 1%;
+	margin-right: 3%;
+	min-width: 5%;
+	max-width: 10%;
+	transition: all 0.3s;
+}
+
+.user_dropdown:hover {
+	background-color: rgba(255, 255, 255, .3);
+	border-radius: 8px;
+}
+
+.user_dropdown .uname {
+	display: flex;
+	position: relative;
+	width: 100%;
+	height: 100%;
+    justify-content: left;
+    align-items: center;
+	font-weight: bold;
+	color: #551A8B;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	transition: all 0.5s;
+}
+
+.user_dropdown .uname:hover {
+	color: #FC6401;
+}
+
+.user_dropdown .content {
+	display: none;
+	position: absolute;
+	padding: 4px;
+	width: 100%;
+	border-radius: 0 0 8px 8px;
+	background-color: rgba(255, 255, 255, .6);
+}
+
+.user_dropdown:hover .content {
+	display: block;
+}
+
+.user_dropdown .content a {
+	color: #551A8B;
+	text-decoration: none;
+	display: block;
+}
+
+.user_dropdown .content a:hover {
+	color: #FC6401;
+}
+
+
+.header .avatar {
+	float: right;
+	height: 100%;
+	border: white solid 2px;
+	border-radius: 10px;
+	box-sizing: border-box;
+	transition: all 0.15s;
+	-webkit-user-drag: none;
+	-moz-user-drag: none;
+	-o-user-drag: none;
+	-ms-user-drag: none;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	-ms-user-select: none;
+}
+
+.header .avatar:hover {
+	border-radius: 5px;
+	border: beige solid 1px;
+}
+
+.header .msg {
+	display: flex;
+	float: right;
+	margin-right: 2%;
+	height: 100%;
+}
+
+.header .broadcast {
+	display: flex;
+	float: right;
+	height: 100%;
+	margin-right: 2%;
+	color: #7C56E2;
+	font-size: large;
+    align-items: center;
+}
