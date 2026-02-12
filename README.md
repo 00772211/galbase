@@ -10,4 +10,5 @@ Galbase论坛的源码，一个小圈子一群人自娱自乐的产物。<br>
 apache2 php8.5 php-mysql php-gd mysql5.7
 
 # 使用教程
-去帖子https://galbase.top/topic/1看吧，重复的内容实在是不想写2份。
+去帖子：https://galbase.top/topic/1<br>
+重复的内容实在是不想写2份。
