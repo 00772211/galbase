@@ -125,7 +125,7 @@
 		'random_avatars' => 22,
 
 		// 新年灯笼
-		'new_yeah_lantern' => TRUE,
+		'new_yeah_lantern' => FALSE,
 
 		// 下雪
 		'snow' => TRUE,

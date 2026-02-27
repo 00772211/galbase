@@ -149,8 +149,6 @@
 		<div class="user_dropdown">
 			<?php
 				// 已登录
-
-
 				if ($uid) {
 					$uname = get_uname($uid);
 					echo "<a class='uname' title='$uname'>$uname</a>";

@@ -1068,16 +1068,41 @@
 
 
 <script>
-	var date = get_time("Y-M-D")
-	console.log(date);
-
-
 	// 
+	// 头像加载完后平衡左右2个高度
+	// 
+	const left_DOM = document.querySelector('.navigation_bar')
+	const right_DOM = document.querySelector('#topic_DOM')
+
+	const resizeObserver = new ResizeObserver(() => {
+		// 当左侧元素的高度变化时，更新右侧元素的高度为左侧元素的高度
+		right_DOM.style.height = `${left_DOM.offsetHeight}px`
+
+		// 计算文本域需要增加的px
+		const f_height = right_DOM.clientHeight
+		const s_height = document.querySelector('#topic_DOM .board_2nd').clientHeight
+		const add_height = f_height - s_height - 5
+		
+		// 文本域增加高度
+		const textarea = document.querySelector('#topic_content');
+		const textarea_h = textarea.offsetHeight;
+		textarea.style.height = `${textarea_h + add_height}px`;
+		
+	});
+
+	resizeObserver.observe(left_DOM);
+
+
+
 	// 
 	// 发帖
 	// 
-	// 
 	const send_topic = () => {
+		// 请求锁，防止过量请求
+		if (lock()) {
+			return
+		}
+
 		var title = document.querySelector('#topic_title').value
 		var content = document.querySelector('#topic_content').value
 		var tags = document.querySelector('#tags').value
@@ -1085,29 +1110,23 @@
 		var fid = document.querySelector('#target_fid').value
 		var cid = "<?php echo $cid; ?>"
 
+		// 帖子信息获取并检查
 		if (!title) {
 			alert("禁止上传无标题帖子！")
 			return
 		}
-
 		if (!content) {
 			alert("禁止上传空内容帖子！")
 			return
 		}
-
 		if (!fid) {
 			alert("你未选择上传到指定版块！")
 			return
 		}
 
-		float_window.title("提醒")
-		float_window.content("发帖成功，系统正在压缩图片，成功会自动进行跳转请耐心等待。")
+		float_window.title("提醒！")
+		float_window.content("数据正在发送至服务器！请耐心等待一会~")
 		float_window.open()
-
-		// 请求锁，防止过量请求
-		if (lock()) {
-			return
-		}
 
 		var data = {
 			"cmd": "send_topic",
@@ -1118,26 +1137,31 @@
 			"fid": fid,
 			"cid": cid
 		}
+
+		// 调用 xhr 请求
 		xhr("/servers/topic.php", data).then((result) => {
-			
+
 			// 修改帖子内容，回到帖子
 			if (cid + 0 > -9000) {
 				window.location.href = `topic/${cid}`
 
 			// 第一次发帖
 			} else {
-				const newest_tid = `
-					<?php
-						// 获取最新tid
-						echo get_value("sys_auto_increment_value", "value", "variable='tid'");
-					?>
-				`
+				const newest_tid = `<?php
+					// 获取最新tid
+					echo get_value("sys_auto_increment_value", "value", "variable='tid'");
+				?>`
 				window.location.href = `topic/${newest_tid}`
+			}
+
+		}).catch((error) => {
+			if (error.message === '请求超时') {
+				float_window.content("发帖超时！<br>原因：可能是网络发生了丢包 / 服务器宕机了<br>您可以新打开个主页看看有没有自己的帖子，若没有请重新点击发帖再次发帖！")
+			} else {
+				float_window.content("发帖出现未知错误！<br>原因：可能是网络发生了丢包 / 服务器宕机了 / 其他未知问题<br>您可以新打开个主页看看有没有自己的帖子，若没有请重新点击发帖再次发帖！")
 			}
 		})
 	}
-
-
 
 
 

@@ -29,6 +29,7 @@
 		// 找到tid对应的fid
 		$result = mysqli_query($link, "SELECT fid, last_modify FROM topics_index WHERE tid={$tid} LIMIT 1;")->fetch_assoc();
 		$fid = $result['fid'];
+		date_default_timezone_set('Asia/Shanghai');
 		$last_modify = date('Y-m-d', $result['last_modify']);
 
 		// tid找fid无效
@@ -114,20 +115,45 @@
 						echo "最后更新: " . $last_modify . "（" . time_diff($last_modify) . "）";
 					}
 				?></span>
+
 				<div id="tags"></div>
+
 				<div class="buttons_">
-					<button onclick="judment()">风纪执行</button>
-					<button onclick="window.location.href = '/send_topic.php?mod=replace&tid=<?php echo $data['tid'];?>'">修改帖子</button>
-					<button onclick="view_topic_format()">查看本贴</button>
-					<button id="collection_button" class="flex" onclick="collection()"><img src="/data/imgs/collection.png" alt=""><span>
-						<?php
-							if (mysql_exist("collection_$uid_last_char_", "uid", $uid, "AND tid=$tid") == 1) {
-								echo "取消收藏";
-							} else {
-								echo "收藏本贴";
-							}
-						?>
-					</span></button>
+					<div class="select_warp">
+						<div class="select_main" onclick="toggleSelect()">
+							<span><img src="/data/imgs/function.png" alt="帖子操作" loading="lazy">帖子操作</span>
+						</div>
+						
+						<div class="options" id="options">
+							<div class="option" onclick="view_topic_format()">
+								<img src="/data/imgs/structure.png" alt="查看本贴结构" loading="lazy">
+								<span>查看本贴结构</span>
+							</div>
+
+							<div class="option" onclick="window.location.href = '/send_topic.php?mod=replace&tid=<?php echo $data['tid'];?>'">
+								<img src="/data/imgs/note.png" alt="修改帖子" loading="lazy">
+								<span>修改帖子</span>
+							</div>
+
+							<div class="option" onclick="judment()">
+								<img src="/data/imgs/judment.png" alt="风纪执行" loading="lazy">
+								<span>风纪执行</span>
+							</div>
+
+							<div class="option" id="collection_button" onclick="collection()">
+								<img src="/data/imgs/collection.png" alt="收藏本贴 / 取消收藏" loading="lazy">
+								<span><?php
+										if (mysql_exist("collection_$uid_last_char_", "uid", $uid, "AND tid=$tid") == 1) {
+											echo "取消收藏";
+										} else {
+											echo "收藏本贴";
+										}
+								?></span>
+							</div>
+						</div>
+					</div>
+
+
 				</div>
 			</header>
 			<main id="content">

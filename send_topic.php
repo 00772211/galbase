@@ -63,7 +63,7 @@
 
 
 
-	<div class="board main_board else">
+	<div class="board main_board else" id="topic_DOM">
 		<img src="/data/imgs/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header>
@@ -80,7 +80,15 @@
 				</ul>
 				<img src="/data/imgs/title_end.png" class="title_end">
 				<div class="buttons_">
-					<button onclick="send_topic()">发帖</button>
+					<button id="send_topic_button" onclick="send_topic()"><?php
+						if ($_GET['mod'] == "add") {
+							echo "发帖";
+						}
+						if ($_GET['mod'] == "replace") {
+							echo "修改帖子";
+						}
+					?>
+					</button>
 					<button onclick="topic_guide()">发帖指南</button>
 				</div>
 			</header>
@@ -127,6 +135,7 @@
 					<div onclick="open_music_gui()"><img src="/data/imgs/music.png" loading="lazy" alt="插入音乐"><br><span>插入音乐</span></div>
 					<div onclick="open_video_gui()"><img src="/data/imgs/video.png" loading="lazy" alt="插入视频"><br><span>插入视频</span></div>
 					<div onclick="insert_subtitle()"><img src="/data/imgs/sub_title.png" loading="lazy" alt="插入子标题"><br><span>子标题</span></div>
+					<div onclick="insert_text('{?MD5\n\n?}')"><img src="/data/imgs/security.png" loading="lazy" title="格式：{?MD5 *?}" alt="图片加载失败"><br><span>MD5</span></div>
 				</div>
 
 				<textarea id="topic_content" placeholder="帖子内容"><?php echo $data['content']; ?></textarea>
@@ -144,45 +153,6 @@
 
 
 
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
-	<br>
 
 	<!-- 加载需要的js -->
 	<?php require_once dirname(__FILE__)."/js/send_topic.php"; ?>

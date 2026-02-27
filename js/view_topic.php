@@ -62,7 +62,7 @@
 		xhr("/servers/space.php", data).then((result) => {
 			float_window.create()
 			float_window.title("提示")
-			float_window.content("已收藏本贴，你可以从右上角进入\"个人空间\"查看已收藏的帖子。")
+			float_window.content("已收藏本贴/取消收藏，你可以从右上角进入\"个人空间\"查看已收藏的帖子。")
 			float_window.open()
 			
 			// 更新按钮文字
@@ -360,6 +360,12 @@ type=2&id=$2&auto=0&height=66"></iframe>`)
 	// 匹配 {?pre ... ?} 中的内容并替换为 <pre>...</pre>
 	var regex = /{\?pre\s*([\s\S]*?)\s*\?}/g;
 	var html = html.replace(regex, "<pre>$1</pre>");
+
+	// 
+	// 对{?MD5 *?}进行修饰，匹配 {?MD5 *?} 的正则表达式
+	// 
+	var regex = /{\?MD5\s*([\s\S]*?)\s*\?}/g;
+	var html = html.replace(regex, "<pre>文件MD5(用于校验文件完整性和安全性，不懂使用<a href='/topic/5334' target='_blank' style='text-decoration: underline;'>点我</a>)：<br>$1</pre>");
 
 	// 添加帖子内容
 	document.querySelector('#content').insertAdjacentHTML("afterbegin", html)
@@ -1185,9 +1191,60 @@ type=2&id=$2&auto=0&height=66"></iframe>`)
 
 
 
+	// 
+	// 下拉触发
+	// 
+	const toggleSelect = () => {
+		const options = document.getElementById('options');
+		
 
+		// 当下拉关闭
+		if (options.style.display === 'block') {
+			const gal_info_DOM = document.querySelector('.gal_info')
+			if (gal_info_DOM) {
+				gal_info_DOM.style.pointerEvents = "all"
+				document.querySelector('.score').hidden = false
+			}
+			options.style.display = 'none'
 
+		// 下拉菜单打开
+		} else {
+			const gal_info_DOM = document.querySelector('.gal_info')
+			if (gal_info_DOM) {
+				gal_info_DOM.style.pointerEvents = "none"
+				document.querySelector('.score').hidden = true
+			}
+			options.style.display = 'block';
+		}
+	}
 
+	// // 
+	// // 下拉后选择
+	// // 
+	// const toggleSelect = (value) => {
+	// 	const selectText = document.querySelector('.select_main span');
+	// 	const options = document.getElementById('options');
+
+	// 	document.querySelector('.gal_info').style.pointerEvents = "all"
+	// 	document.querySelector('.score').hidden = false
+
+	// 	// 隐藏下拉菜单
+	// 	options.style.display = 'none';
+	// }
+
+	// 点击事件：点击外部区域时关闭下拉菜单
+	document.addEventListener('click', function(e) {
+		if (!e.target.closest('.select_warp')) {
+			const options = document.getElementById('options');
+			options.style.display = 'none';
+
+			const gal_info_DOM = document.querySelector('.gal_info')
+			if (gal_info_DOM) {
+				gal_info_DOM.style.pointerEvents = "all"
+				document.querySelector('.score').hidden = false
+			}
+		}
+	});
 
 
 

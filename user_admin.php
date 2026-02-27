@@ -92,6 +92,22 @@
 		<div class="board_2nd">
 			<header>
 				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content"><?php echo title_format("设置"); ?></ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main>
+				待开发中…未来见…
+			</main>
+		</div>
+	</div>
+
+	<h4 style="visibility: hidden;">x</h4>
+
+	<div class="board main_board">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img src="/data/imgs/title_start.png" class="title_start">
 				<ul class="title_content"><?php echo title_format("账号绑定"); ?></ul>
 				<img src="/data/imgs/title_end.png" class="title_end">
 			</header>

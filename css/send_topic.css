@@ -30,8 +30,8 @@
 	display: none;
 }
 
-.function_line {
-	height: 8%;
+/* .function_line {
+	height: 5cqw;
 	padding-left: 10px;
 	border: 2px solid #5685FF;
 	border-radius: 5px;
@@ -42,10 +42,27 @@
 	float: left;
 	text-align: center;
 	transform: scale(0.95);
+} */
+
+.function_line {
+	display: flex;
+	flex-wrap: wrap;  /* 允许换行 */
+	gap: 10px;  /* 控制子元素之间的间距 */
+	border: 2px solid #5685FF;
+	border-radius: 5px;
+	background-color: #f5f6f7;
 }
 
-.function_line img {
-	height: 100%;
+.function_line div {
+	width: calc(5cqw);  /* 每个 div 占父容器的三分之一减去间距 */
+	text-align: center;
+	transform: scale(0.95);
+}
+
+.function_line div img {
+	max-width: 100%;
+	width: auto;
+	height: 4cqw;
 }
 
 .function_line span {

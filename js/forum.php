@@ -162,17 +162,6 @@
 		}
 	}
 
-	// 按分数高低排序
-	const request_topics_with_score = () => {
-		window.location.href = `/forums/<?php echo $_GET['fid']; ?>/<?php echo $_GET['page']; ?>/score`
-	}
-
-	// 按默认排序
-	const request_topics_with_normal = () => {
-		window.location.href = `/forum/<?php echo $_GET['fid']; ?>/<?php echo $_GET['page']; ?>`
-	}
-
-
 
 	// 
 	// 
@@ -269,4 +258,89 @@
 			imgs_dom.insertAdjacentHTML("beforeend", html)
 		}
 	}
+
+
+
+	// 
+	// 排序选择
+	// 
+	const sort_DOM = document.getElementById('sort');
+
+	// 添加 change 事件监听器
+	sort_DOM.addEventListener('change', function(e) {
+		// 获取当前选择的选项的值
+		const sort = e.target.value;
+
+		if (sort == "normal") {
+			window.location.href = `/forum/<?php echo $_GET['fid']; ?>/<?php echo $_GET['page']; ?>`
+		}
+
+		if (sort == "score") {
+			window.location.href = `/forums/<?php echo $_GET['fid']; ?>/<?php echo $_GET['page']; ?>/score`
+		}
+
+	})
+
+
+
+	// 
+	// 排除拔作
+	// 
+	const no_push_DOM = document.getElementById("no_push");
+
+	no_push_DOM.addEventListener("change", function() {
+
+		// 请求锁，防止过量请求
+		if (small_lock()) {
+			return
+		}
+
+		if (no_push_DOM.checked) {
+			var no_push_state = true
+		} else {
+			var no_push_state = false
+		}
+
+		var data = {
+			"cmd": "no_push",
+			"state": no_push_state
+		};
+
+		// 调用 xhr 请求
+		xhr("/servers/user_config.php", data).then((result) => {
+			location.reload();
+		})
+	})
+
+
+
+	// 
+	// 只有拔作
+	// 
+	const only_H_DOM = document.getElementById("only_H");
+
+
+	only_H_DOM.addEventListener("change", function() {
+
+		// 请求锁，防止过量请求
+		if (small_lock()) {
+			return
+		}
+
+		if (only_H_DOM.checked) {
+			var only_H_state = true
+		} else {
+			var only_H_state = false
+		}
+
+		var data = {
+			"cmd": "only_H",
+			"state": only_H_state
+		};
+
+		// 调用 xhr 请求
+		xhr("/servers/user_config.php", data).then((result) => {
+			location.reload();
+		})
+	})
 </script>

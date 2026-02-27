@@ -28,11 +28,61 @@
 				<img src="/data/imgs/title_end.png" class="title_end" alt="版块装束图片">
 
 				<div class="buttons_">
+
+					<label class="checkbox" title="打开后将不再推送拔作" <?php if (!$uid) { echo "hidden"; } ?>>
+						<input type="checkbox" id="no_push" <?php
+							if ($uid) {
+								if (user_config($uid, "no_push") == 1) {
+									echo "checked";
+								}
+							}
+						?>>
+						<span class="checkmark"></span>
+						<span>不看拔作</span>
+					</label>
+
+					<label class="checkbox" title="打开后将不再推送拔作" <?php if (!$uid) { echo "hidden"; } ?>>
+						<input type="checkbox" id="only_H" <?php
+							if ($uid) {
+								if (user_config($uid, "only_H") == 1) {
+									echo "checked";
+								}
+							}
+						?>>
+						<span class="checkmark"></span>
+						<span>仅看拔作</span>
+					</label>
+
+					<select id="sort" style="width: 14cqw">
+						<?php
+							// 存在排序选择
+							if (isset($_GET['mode'])) {
+								$mode = $_GET['mode'];
+								echo "<option value='normal'>默认排序</option>";
+
+								// 分数排序
+								if ($mode == "score") {
+									echo "<option selected value='score'>按评分排序</option>";
+								} else {
+									echo "<option value='score'>按评分排序</option>";
+								}
+
+							// 默认排序
+							} else {
+								echo "<option selected value='normal'>默认排序</option>";
+								echo "<option value='score'>按评分排序</option>";
+								echo "<option value='score'>按评分排序</option>";
+							}
+						?>
+					</select>
+
+
+
 					<?php
 						// 资源收入版块2个按钮
 						if ($_GET['fid'] == "1-1") {
-							echo "<button onclick=\"request_topics_with_score()\">按评分排序</button>";
-							echo "<button onclick=\"request_topics_with_normal()\">按默认排序</button>";
+							// echo "<button onclick=\"request_topics_with_score()\"></button>";
+							// echo "<button onclick=\"request_topics_with_normal()\">按默认排序</button>";
 						}
 
 						// 番剧版块

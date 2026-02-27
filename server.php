@@ -321,6 +321,24 @@
 				$fid = $_POST['fid'];
 				$page = $_POST['page'];
 				$mode = $_POST['mode'];
+				$uid = get_uid();
+
+				// sql结构
+				$no_push_format = "";
+				$only_H_format = "";
+
+				// 判断是否排除拔作
+				if ($uid) {
+					if (user_config($uid, "no_push")) {
+						$no_push_format = "AND no_push IS NULL";
+					}
+
+					if (user_config($uid, "only_H")) {
+						$only_H_format = "AND no_push = 1";
+					}
+				}
+
+				$formats = $no_push_format . $only_H_format;
 
 				// 偏移量 = page * 20，page初始为0
 				$offset_value = $page * 20;
@@ -328,13 +346,13 @@
 				// 默认排序
 				if (!$mode) {
 					// 获取需要的20个tid
-					$result = mysqli_query($link, "SELECT tid FROM `topics_index` WHERE fid='$fid' ORDER BY tid DESC LIMIT 20 OFFSET $offset_value; ");
+					$result = mysqli_query($link, "SELECT tid FROM `topics_index` WHERE fid='$fid' $formats ORDER BY tid DESC LIMIT 20 OFFSET $offset_value; ");
 				}
 
 				// 按分数高低排序
 				if ($mode == "score") {
 					// 获取所有tid
-					$result = mysqli_query($link, "SELECT tid FROM `topics_index` WHERE fid='$fid' ORDER BY score DESC LIMIT 20 OFFSET $offset_value; ");
+					$result = mysqli_query($link, "SELECT tid FROM `topics_index` WHERE fid='$fid' $formats ORDER BY score DESC LIMIT 20 OFFSET $offset_value; ");
 				}
 
 				$n = 0;

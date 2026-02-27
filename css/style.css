@@ -123,6 +123,108 @@ select:hover {
 	border-color: #2249ab;
 }
 
+/* 包裹select的外部容器 */
+.select_warp {
+	position: relative;
+	width: 200px;
+	user-select: none;
+	z-index: 100;
+}
+
+/* 自定义下拉框的样式 */
+.select_main {
+	height: 30px;
+	padding: 0 10px;
+	background-color: rgba(235, 251, 252, 0.5);
+	border: 2px solid #5685FF;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	transition: background-color 0.25s ease, border-color 0.25s ease;
+	position: relative;
+	z-index: 100;
+}
+
+.select_main span img {
+	float: left;
+	margin-right: 10px;
+	height: 20px;
+}
+
+
+
+/* 下拉箭头样式 */
+.select_main::after {
+	content: '';
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%) rotate(45deg);
+	width: 8px;
+	height: 8px;
+	border-left: 2px solid #5685FF;
+	border-bottom: 2px solid #5685FF;
+	pointer-events: none;
+}
+
+/* 自定义选项菜单样式 */
+.options {
+	display: none;
+	position: absolute;
+	width: 100%;
+	background-color: white;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	z-index: 100;
+	max-height: 200px;
+	overflow-y: auto;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+/* 每个选项的样式 */
+.option {
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	cursor: pointer;
+}
+
+.option img {
+	margin-right: 10px;
+	height: 20px;
+}
+
+/* 悬停效果 */
+.option:hover {
+	background-color: rgba(86, 133, 255, 0.1);
+}
+
+/* 样式调节 select 的悬停效果 */
+.select_main:hover {
+	background-color: rgba(189, 240, 160, 0.5);
+	border-color: #2249ab;
+}
+
+/* 调整滚动条的样式 */
+.options::-webkit-scrollbar {
+	width: 6px;
+}
+
+.options::-webkit-scrollbar-thumb {
+	background-color: #ccc;
+	border-radius: 10px;
+}
+
+
+
+
+
+
+
 textarea {
 	padding: 5px;
 	border: 2px solid #5685FF;
@@ -469,10 +571,12 @@ textarea {
 }
 
 .buttons_ {
+	display: flex;
 	position: absolute;
 	top: 2px;
 	right: 20px;
 	transform: translate(0, 50%);
+	gap: 5px;
 }
 
 .buttons_ button {

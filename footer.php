@@ -40,9 +40,9 @@
 		mysqli_query($link, "UPDATE sys_auto_increment_value SET value='0' WHERE variable='views' LIMIT 1");
 
 		// 
-		// 获取今日推荐11个GAL
+		// 获取今日推荐5个GAL
 		// 
-		$result = mysqli_query($link, "SELECT tid FROM topics_index WHERE fid='1-1' AND tid > 0 ORDER BY RAND() LIMIT 5;");
+		$result = mysqli_query($link, "SELECT tid FROM topics_index WHERE fid='1-1' AND tid > 0 AND no_push IS NULL ORDER BY RAND() LIMIT 5;");
 
 		// 清楚tids变量，来源于/js/index.php中的$tids会影响到下面的值
 		unset($tids);
@@ -172,9 +172,7 @@
 
 <script>
 	// 
-	// 
 	// 回到论坛主页或顶部
-	// 
 	// 
 	const goto_top = () => {
 		const path = window.location.pathname
@@ -381,8 +379,6 @@
 	// 监听内容高度变化
 	// 
 	const dynamic_height = document.querySelector('.dynamic_height');
-	console.log(233);
-	
 
 	if (dynamic_height) {
 		const resizeObserver = new ResizeObserver((entries) => {
@@ -399,6 +395,9 @@
 	}
 
 
+
+// 在DOM加载完成后加载视差
+document.addEventListener('DOMContentLoaded', () => {
 	// 
 	// 底部dark视差
 	// 
@@ -445,34 +444,34 @@
 
 		darkImg.style.transform = `translateY(${maxOffset * progress}px)`;
 	}
+});
 
+// 	// 
+// 	// 播放器停止进入footer
+// 	// 
+// 	const playBox = document.querySelector('.play_box');
+// 	const footer = document.querySelector('footer');
 
-	// 
-	// 播放器停止进入footer
-	// 
-	const playBox = document.querySelector('.play_box');
-	const footer = document.querySelector('footer');
+// 	// 固定播放器距离底部的默认距离
+// 	const fixedBottom = 16; // 对应 CSS 中 1cqw 的 px 值，大约根据屏幕自适应调整
 
-	// 固定播放器距离底部的默认距离
-	const fixedBottom = 16; // 对应 CSS 中 1cqw 的 px 值，大约根据屏幕自适应调整
+// 	window.addEventListener('scroll', () => {
+// 		// 页面可视高度
+// 		const viewportHeight = window.innerHeight;
+// 		// footer 距离页面顶部的距离
+// 		const footerTop = footer.getBoundingClientRect().top + window.scrollY;
 
-	window.addEventListener('scroll', () => {
-		// 页面可视高度
-		const viewportHeight = window.innerHeight;
-		// footer 距离页面顶部的距离
-		const footerTop = footer.getBoundingClientRect().top + window.scrollY;
+// 		// 当前滚动到底部的位置
+// 		const scrollBottom = window.scrollY + viewportHeight;
 
-		// 当前滚动到底部的位置
-		const scrollBottom = window.scrollY + viewportHeight;
-
-		if (scrollBottom >= footerTop) {
-			// 当滚动到底部 footer 时，让播放器停在 footer 上方
-			const offset = scrollBottom - footerTop + fixedBottom;
-			playBox.style.bottom = `${offset}px`;
-		} else {
-			// 普通固定在页面底部
-			playBox.style.bottom = `${fixedBottom}px`;
-		}
-	});
+// 		if (scrollBottom >= footerTop) {
+// 			// 当滚动到底部 footer 时，让播放器停在 footer 上方
+// 			const offset = scrollBottom - footerTop + fixedBottom;
+// 			playBox.style.bottom = `${offset}px`;
+// 		} else {
+// 			// 普通固定在页面底部
+// 			playBox.style.bottom = `${fixedBottom}px`;
+// 		}
+// 	});
 
 </script>

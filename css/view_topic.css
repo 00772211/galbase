@@ -123,6 +123,7 @@
 	list-style: none;
 	font-size: x-large;
 	font-weight: bold;
+	cursor: text;
 }
 
 .gal_info .score {
@@ -136,15 +137,8 @@
 	background: #55589A;
 	border-color: #2B2C63;
 	border-radius: 4px;
+	z-index: 5;
 }
-
-
-
-
-
-
-
-
 
 
 

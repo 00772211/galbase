@@ -171,8 +171,11 @@
 				log_add($uid, "\$user 在版块{$fid}发布了帖子：\$title", $tid);
 			}
 
-			// 更新索引
-
+			// 拔作TAG的帖子不推送
+			$tags = explode("|", $tags);
+			if (in_array("拔作", $tags)) {
+				no_push($tid);
+			}
 			break;
 
 

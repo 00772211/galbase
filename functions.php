@@ -219,8 +219,6 @@
 			$date = get_time("Y-m-d");
 			mysqli_query($link, "INSERT INTO `logs_$year` (uid, date, content, `read`) VALUES ($auther_uid, '$date', \"$content\", '0'); ");
 		}
-
-		
 	}
 
 	
@@ -787,6 +785,7 @@
 	}
 
 
+
 	// 
 	// 
 	// 获取数据表中的一个值
@@ -799,13 +798,20 @@
 
 		// 查询函数不为0获取value
 		if (mysqli_num_rows($result) != 0) {
-			return $result->fetch_assoc()[$value];
+
+			$value = $result->fetch_assoc()[$value];
+
+			// 存在值，判断是否为NULL
+			if (isset($value)) {
+				return $value;
+			} else {
+				return FALSE;
+			}
+
 		} else {
 			return FALSE;
 		}
 	}
-
-
 
 
 
@@ -1108,8 +1114,32 @@
 	function push($tid) {
 		global $link;
 
-		$timestamp = strtotime(get_time("Y-m-d H:i:s"));
+		// 时区设置，如果不设置，strtotime函数会自动补上时分秒，如2011-11-11参数进入，会变成2011-11-11 08:00:00进入。
+		date_default_timezone_set('Asia/Shanghai');
+		$date = get_time();
+		$timestamp = strtotime($date);
+
+		// 根据今日发帖数去排列最近发帖
+		$min = $timestamp - 1;
+		$max = $timestamp + 100;
+		$count = mysqli_query($link, "SELECT COUNT(tid) FROM topics_index WHERE last_modify BETWEEN $min AND $max;");
+		$count = $count->fetch_assoc()['COUNT(tid)'];
+		$timestamp = $timestamp + $count;
+
 		mysqli_query($link, "UPDATE topics_index SET last_modify='$timestamp' WHERE tid='$tid'");
+	}
+
+
+
+	// 
+	// 禁止推送
+	// 
+	function no_push($tid) {
+		global $link;
+
+		mysqli_query($link, "UPDATE `topics_index` SET `no_push` = '1' WHERE tid= $tid;");
+		mysqli_query($link, "UPDATE `vids_index` SET `no_push` = '1' WHERE tid= $tid;");
+		return TRUE;
 	}
 
 
@@ -1157,6 +1187,25 @@
 
 
 	// 
+	// 用户配置管理
 	// 
-	// 
+	// 用法：
+	// 1.查询 $ces = users_config(1, "no_push");
+	// 2.查询，没有则添加，有则修改 $ces = users_config(1, "no_push", TRUE, "1");
+	function user_config($uid, $config, $value="") {
+		global $link;
+
+		$uid_last = substr($uid, -1);
+		$state = get_value("users_configs_$uid_last", "$config", "uid=$uid");
+
+		// 查询
+		if ($value == "") {
+			return $state;
+
+		// 添加&修改
+		} else {
+			mysqli_query($link, "INSERT INTO users_configs_$uid_last (uid, $config) VALUES ($uid, '$value') ON DUPLICATE KEY UPDATE $config = '$value';");
+			return $value;
+		}
+	}
 ?>

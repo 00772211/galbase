@@ -33,6 +33,7 @@ async function xhr(url, JSON) {
 }
 
 
+
 // var data = {
 // "cmd": "send",
 // "value": "1"
