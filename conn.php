@@ -7,7 +7,7 @@ function connect_db(){
     $config = array(
         'host' => 'localhost',
         'user' => 'root',
-        'password' => '',
+        'password' => 'ss123321',
         'dbname' => 'galbase',
         'charset' => 'utf8'
     );

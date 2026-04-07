@@ -128,7 +128,7 @@
 		'new_yeah_lantern' => FALSE,
 
 		// 下雪
-		'snow' => TRUE,
+		'snow' => FALSE,
 
 		'none' => 'none'
 	);

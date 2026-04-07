@@ -27,8 +27,7 @@
 				<ul class="title_content"><?php echo title_format(get_board_name($_GET['fid'], 1, 1)); ?></ul>
 				<img src="/data/imgs/title_end.png" class="title_end" alt="版块装束图片">
 
-				<div class="buttons_">
-
+				<div class="buttons_" <?php if ($_GET['fid'] != "1-1") { echo "hidden"; }?>>
 					<label class="checkbox" title="打开后将不再推送拔作" <?php if (!$uid) { echo "hidden"; } ?>>
 						<input type="checkbox" id="no_push" <?php
 							if ($uid) {
