@@ -1,0 +1,374 @@
+.function {
+	display: flex;
+	align-items: center;
+	text-align: center;
+	font-size: large;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.title {
+	width: 70%;
+}
+
+
+.topic_info {
+	margin-left: 10px;
+}
+
+.navigation_bar .auther {
+	display: block;
+	cursor: default;
+}
+
+.navigation_bar .auther a {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+}
+
+.navigation_bar .auther .avatar {
+	width: 100%;
+	border: white 6px solid;
+	border-radius: 15%;
+	transform: scale(0.95);
+	transition: border 0.75s, border-radius 0.75s;
+	box-sizing: border-box;
+}
+
+.navigation_bar .auther .avatar:fullscreen {
+	border: 0px;
+}
+
+.navigation_bar .auther .avatar:hover {
+	border: #EEEEEE 4px solid;
+	border-radius: 0;
+	cursor: pointer;
+}
+
+.navigation_bar .auther .sign {
+	color: #7C56E2;
+	user-select: text;
+	cursor: text;
+}
+
+
+
+
+
+
+
+.navigation_bar.auther_data {
+	position: relative;
+}
+
+.navigation_bar .pannya {
+	position: absolute;
+	top: -40%;
+	right: -30%;
+	width: 100%;
+	transform: scale(0.5);
+	user-select: none;
+	-webkit-user-drag: none;
+	pointer-events: none;
+}
+
+.navigation_bar .auther_data {
+	font-size: 1.3cqw;
+	user-select: text;
+	cursor: text;
+}
+
+
+
+
+
+.navigation_bar .love_img img {
+	width: 100%;
+    border: white 6px solid;
+    border-radius: 4%;
+    cursor: pointer;
+    transform: scale(0.95);
+    box-sizing: border-box;
+}
+
+#content {
+	min-height: 100%;
+}
+
+
+#content img {
+    width: 50%;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+
+
+/* 资源收入版块gal信息 */
+.gal_info {
+	position: relative;
+	background: url(./data/imgs/news.png) no-repeat center center;
+}
+
+/* 文本介绍 */
+.gal_info_text {
+	font-size: large;
+	line-height: 1.5em;
+}
+
+
+.gal_info li {
+	list-style: none;
+	font-size: x-large;
+	font-weight: bold;
+	cursor: text;
+}
+
+.gal_info .score {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	padding: 2px 2px 6px 2px;
+	color: #fff;
+	text-align: left;
+	cursor: pointer;
+	background: #55589A;
+	border-color: #2B2C63;
+	border-radius: 4px;
+	z-index: 5;
+}
+
+
+
+/* 帖子内op播放器 和 帖子封面 */
+.player_window {
+	display: inline-block;
+	position: relative;
+	aspect-ratio: 16/9;
+}
+
+.player_window video {
+	width: 100%;
+	border: white 6px solid;
+	border-radius: 20px;
+	transform: scale(0.97);
+	box-sizing: border-box;
+}
+
+.player_window video:fullscreen {
+	border: 0px;
+}
+
+.player_window_small {
+	display: inline-block;
+	width: 48%;
+}
+
+
+
+
+.reply_card {
+	float: left;
+	position: relative;
+	padding: 5px;
+	width: 99.2%;
+	background-color: #f5f6f7;
+	border-bottom: 1px dashed #888888;
+	box-sizing: border-box;
+}
+
+.reply_card .date {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+}
+
+.reply_card .auther {
+	float: left;
+	width: 15%;
+}
+
+.reply_card .auther .avatar {
+	width: 100%;
+	border: white 2px solid;
+	border-radius: 15%;
+	transform: scale(0.95);
+	box-sizing: border-box;
+}
+
+.reply_card .auther .uname {
+	display: block;
+	text-align: center;
+}
+
+.reply_card .content {
+	display: inline-block;
+	padding: 5px;
+	width: 60%;
+	box-sizing: border-box;
+}
+
+.reply_card .bottom {
+	display: flex;
+	align-items: center;
+}
+
+.reply_card .bottom * {
+	margin-right: 5px;
+}
+
+
+
+
+#content .bottom {
+	position: relative;
+	margin-top: 2px;
+	padding: 2px;
+	width: 100%;
+	border-top: 1px dashed #888888;
+	overflow: hidden;
+}
+
+#content .bottom .reply {
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	transform: translate(0, -50%);
+}
+
+#content .bottom .reply input {
+	width: 350px;
+}
+
+#content .bottom .prompt {
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	transform: translate(0, -50%);
+}
+
+
+#content .download {
+	float: right;
+	display: flex;
+	margin-right: 10px;
+	justify-content: right;
+	align-items: center;
+}
+
+#content .download img {
+	margin-right: 5px;
+	cursor: pointer;
+}
+
+#content .download span {
+	cursor: pointer;
+}
+
+
+
+/* 图片模糊防剧透用 */
+.defense_img {
+	display: inline;
+	box-sizing: border-box;
+}
+
+.defense_img img {
+	filter: blur(10px);
+	transition: all 0.3s;
+	box-sizing: border-box;
+}
+
+.defense_img img:hover {
+	filter: blur(0px);
+}
+
+
+
+#anime_player {
+	padding: 1%;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+#ep {
+	padding: 5px;
+	width: 100%;
+	height: auto;
+	border: 1px dashed #888888;
+	background-color: #f5f6f7;
+	box-sizing: border-box;
+}
+
+#ep .select {
+	background-color: #5685FF;
+}
+
+#ep span {
+	display: inline-flex;
+	margin: 3px;
+	padding: 0 10px 0 10px;
+	height: 35px;
+	color: white;
+	text-align: center;
+	align-items: center;
+	background-color: #7cc3e0;
+	border: 2px solid #5685FF;
+	box-sizing: border-box;
+	border-radius: 2px;
+	cursor: pointer;
+}
+
+#ep span:hover {
+	border: 2px solid #2249ab;
+}
+
+
+#tags {
+	display: inline-block;
+}
+
+#reply main {
+	display: flex;
+	align-items: center;
+	height: 3cqw;
+	box-sizing: border-box;
+}
+
+#reply main img {
+	margin: 4px;
+	height: 100%;
+	padding: 2px;
+	cursor: pointer;
+}
+
+#reply textarea {
+	margin-right: 5px;
+	width: 50%;
+	height: 100%;
+	resize: none;
+}
+
+.reply_play_box {
+	margin: 0px;
+	display: inline-flex !important;
+	bottom: 6px !important;
+	/* margin-top: 200px !important;  */
+	margin-left: 65%;
+}
+
+.sub_title {
+	margin: 0.5cqw;
+	padding: 2px;
+	font-size: 1.7cqw;
+	color: white;
+	font-weight: 700;
+	text-align: center;
+	border-radius: 5px;
+	border-color: #4E78E5;
+	text-shadow: 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5);
+	background-color: #6a7dc7;
+	box-sizing: border-box;
+}

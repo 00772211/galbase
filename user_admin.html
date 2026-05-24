@@ -1,0 +1,191 @@
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>账号管理</title>
+	<!-- css -->
+	<link rel="stylesheet" href="/css/header.css">
+	<link rel="stylesheet" href="/css/style.css">
+
+	<style>
+		/* 清除内外边距 */
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		
+		.else main {
+			position: relative;
+		}
+
+		input {
+			width: 30%;
+		}
+
+		.avatar_big {
+			position: absolute;
+			height: 94%;
+			right: 0;
+			border: white 6px solid;
+			border-radius: 15%;
+			transition: border 0.75s, border-radius 0.75s;
+			box-sizing: border-box;
+			cursor: pointer;
+		}
+
+		.avatar_big:hover {
+			border: #EEEEEE 4px solid;
+			border-radius: 0;
+		}
+
+		#uploadBox {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-left: 50%;
+			width: 100px;
+			height: 30px;
+			border: 3px dashed #ccc;
+			cursor: pointer;
+			transform: translate(-50%);
+		}
+
+		#uploadBox:hover {
+			border-color: #aaa;
+		}
+
+		#uploadBox input[type="file"] {
+			display: none;
+		}
+
+		#previewContainer {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-top: 20px;
+		}
+
+		#previewWrapper {
+			position: relative;
+			width: 100%;
+			height: auto;
+			max-height: 100%;
+			overflow: hidden;
+		}
+
+		#preview {
+			width: 100%;
+			max-height: 100%;
+			object-fit: contain;
+		}
+
+		#selectionBox {
+			position: absolute;
+			top: -1%;
+			left: -1%;
+			/* height: 2vw; */
+			border: 2px dashed #f00;
+		}
+
+		#resizeHandle {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			width: 10px;
+			height: 10px;
+			background-color: #f00;
+			cursor: se-resize;
+		}
+
+		#downloadButton {
+			margin-top: 20px;
+		}
+	</style>
+</head>
+<body>
+	<script src="/js/functions.js"></script>
+
+	<div class="header"></div>
+	<script src="/js/header.js"></script>
+
+	<br>
+
+	<div class="board navigation_bar"></div>
+	<script src="/js/navigation_bar.js"></script>
+
+	<div class="board main_board else">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>心</li>
+					<li>路</li>
+					<li>历</li>
+					<li>程</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main>
+				<img class="avatar_big" src="" onclick="fullscreen_avatar(this)" loading="lazy" alt="头像加载失败"><br><br>
+
+				展示的个性签名：<input type="text" id="sign" placeholder="Love Forever" value=""><br><br>
+				此生挚爱的图片：<input type="text" id="sign_img" placeholder="格式：tid|aid，例如:1|1" value=""><br><br>
+				此生挚爱的故事：<input type="text" id="best_love_story" placeholder="友情是宽容，友情是仁慈" value=""><br><br>
+				正在推进的故事：<input type="text" id="playing_story" placeholder="友情是不张扬，不自夸。" value=""><br><br>
+				强烈推荐的故事：<input type="text" id="recommend_stories" placeholder="格式：A|B|C|D|E" value=""><br><br>
+				<button onclick="user_data_update()">全部信息提交</button>
+				<button onclick="update_uname()">更改用户名</button>
+				<button onclick="replace_psw()">更改密码</button>
+				<button class="button2" onclick="replace_avatar()">更换头像</button>
+			</main>
+		</div>
+	</div>
+
+	<h4 style="visibility: hidden;">x</h4>
+
+	<div class="board main_board">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>设</li>
+					<li>置</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main>
+				待开发中…未来见…
+			</main>
+		</div>
+	</div>
+
+	<h4 style="visibility: hidden;">x</h4>
+
+	<div class="board main_board dynamic_height_flex">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>账</li>
+					<li>号</li>
+					<li>绑</li>
+					<li>定</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main style="padding: 10px;">
+				绑定的邮箱：<input type="text" id="email" placeholder="Just Living Database" value="">
+				<button onclick="update_email()">提交邮箱</button><br>
+				<span>本绑定的作用：当论坛站点发生迁移或变更域名时，又或者最坏的情况站点关门，都会通知至此邮箱。</span><br>
+				<span>注：请不要使用QQ/网易等国内邮箱会被拦截，最好绑定谷歌/微软等国外邮箱，有事通知时均以谷歌邮箱进行发送。</span>
+			</main>
+		</div>
+	</div>
+
+
+<script src="/js/img_zip.js"></script>
+<script src="/js/user_admin.js"></script>
+<script src="/js/footer.js"></script>

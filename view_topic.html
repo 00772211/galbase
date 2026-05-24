@@ -1,0 +1,200 @@
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name='description' content='GALBase论坛 - Galgame资源站点'>
+	<title>加载中...</title>
+	<link rel="stylesheet" href="/css/header.css">
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/view_topic.css">
+</head>
+<body>
+	<script src="/js/functions.js"></script>
+
+	<div class="header"></div>
+	<script src="/js/header.js"></script>
+
+	<br>
+	<br>
+
+	<div class="board main_board" style="width:97.5%">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header class="function">
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>T</li>
+					<li>I</li>
+					<li>T</li>
+					<li>L</li>
+					<li>E</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+				<span class="title"></span>
+			</header>
+		</div>
+	</div>
+	<br>
+	<br>
+
+	<div class="board navigation_bar"></div>
+	<script src="/js/navigation_bar.js"></script>
+
+	<div class="board main_board">
+		<div class="board_2nd dynamic_height">
+			<header style="display: flex; justify-content: space-between;">
+				<span class="topic_info"></span>
+				<div id="tags"></div>
+
+				<div class="buttons_">
+					<div class="select_warp">
+						<div class="select_main" onclick="toggleSelect()">
+							<span><img src="/data/imgs/function.png" alt="帖子操作" loading="lazy">帖子操作</span>
+						</div>
+						
+						<div class="options" id="options">
+							<div class="option" onclick="view_topic_format()">
+								<img src="/data/imgs/structure.png" alt="查看本贴结构" loading="lazy">
+								<span>查看本贴结构</span>
+							</div>
+
+							<div class="option" onclick="replace_topic()">
+								<img src="/data/imgs/note.png" alt="修改帖子" loading="lazy">
+								<span>修改帖子</span>
+							</div>
+
+							<div class="option" onclick="judment()">
+								<img src="/data/imgs/judment.png" alt="风纪执行" loading="lazy">
+								<span>风纪执行</span>
+							</div>
+
+							<div class="option" id="collection_button" onclick="collection()">
+								<img src="/data/imgs/collection.png" alt="收藏" loading="lazy">
+								<span>收藏状态请求中…</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</header>
+			<main id="content"></main>
+		</div>
+	</div>
+
+	<div class="board wide_board" id="rate" hidden>
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header class="function">
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>评</li>
+					<li>分</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main>
+				<div class="chart-container" id="slider">
+					<div class="chart" id="chart"></div>
+				</div>
+
+				<div class="part" id="user_rate">
+					<div class="card">
+						<div class="auther">
+							<img src="/data/imgs/title_start.png" class="avatar" alt="图片加载失败">
+							<span class="uname">历史简评</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="part" id="self_rate">
+					<table border="1">
+						<tbody>
+							<tr><td>1</td> <td>2</td> <td>3</td> <td>4</td> <td>5</td></tr>
+							<tr><td>雷作</td> <td>劝退</td> <td>不推荐</td> <td>不太行</td> <td>普通</td></tr>
+							<tr><td>6</td> <td>7</td> <td>8</td> <td>9</td> <td>10</td></tr>
+							<tr><td>还行</td> <td>推荐</td> <td>强推</td> <td>神作</td> <td>此生必玩</td></tr>
+						</tbody>
+					</table>
+					<br>
+
+					<input type="text" class="my_score" value="" placeholder="您觉得该作品值几分？">
+					<input type="text" id="rating_content" value="" placeholder="简评一下：">
+					<br>
+
+					您当前作品游玩状态：
+					<select class="state">
+						<option>未进行</option>
+						<option>已推完</option>
+						<option>进行中</option>
+						<option>弃坑</option>
+						<option>雷作</option>
+					</select><br>
+
+					您上一次评分更新于：<span id="last_rating">无</span><br><br>
+
+					<div class="submit_button">
+						<button class="button2" onclick="put_rating()">提交评分</button>
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+
+	<div class="board wide_board" id="developer_works" hidden>
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header class="function">
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>该</li>
+					<li>会</li>
+					<li>社</li>
+					<li>所</li>
+					<li>有</li>
+					<li>作</li>
+					<li>品</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main></main>
+		</div>
+	</div>
+
+	<div class="board wide_board" id="reply">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header class="function">
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>回</li>
+					<li>复</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main>
+				<img src="/data/imgs/file.png" onclick="alert('附件上传未实装')" loading="lazy" alt="附件上传" title="附件上传">
+				<img src="/data/imgs/emoji.png" onclick="alert('表情未实装')" loading="lazy" alt="表情" title="表情">
+				<textarea class="reply_content" placeholder="请输入你想回复的内容！请不要使用英文双引号！"></textarea>
+				<button onclick="reply()">参与回复</button>
+			</main>
+		</div>
+	</div>
+
+	<div class="board wide_board" id="reply_region" hidden>
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header class="function">
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>历</li>
+					<li>史</li>
+					<li>回</li>
+					<li>复</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main></main>
+		</div>
+	</div>
+
+<script src="/js/view_topic.js"></script>
+<script src="/js/footer.js"></script>

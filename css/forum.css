@@ -37,6 +37,7 @@
 }
 
 .forum_card .tags {
+	height: 1.2cqw;
 	padding: 1% 2% 1% 2%;
 	white-space: nowrap;
 	overflow: hidden;

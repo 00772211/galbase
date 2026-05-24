@@ -1,19 +1,40 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # 静态资源直接放行
+    RewriteRule ^(css|js|img|images)/ - [L]
+
     # 如果请求的文件或目录不存在
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
     # 匹配 `/topic/{tid}` 
-    RewriteRule ^topic/([-0-9]+)$ view_topic.php?tid=$1
+    RewriteRule ^topic/([-0-9]+)$ view_topic.html?tid=$1 [L,QSA]
     
-    # 匹配 `/forum.php/{fid}/{page}`
-    RewriteRule ^forum/([-0-9]+)/([0-9]+)$ forum.php?fid=$1&page=$2 
+    # 匹配 `/forum/{fid}/{page}`
+    RewriteRule ^forum/([-0-9]+)/([0-9]+)$ forum.html?fid=$1&page=$2 [L,QSA]
 
-    # 匹配 `/forum.php/{fid}/{page}/{mode}`
-    RewriteRule ^forums/([-0-9]+)/([0-9]+)/([A-z]+)$ forum.php?fid=$1&page=$2&mode=$3
+    # 匹配 `/forums/{fid}/{page}/{sort}`
+    RewriteRule ^forums/([-0-9]+)/([0-9]+)/([A-z]+)$ forum.html?fid=$1&page=$2&sort=$3 [L,QSA]
 
     # 匹配 `/space/{uid}` 
-    RewriteRule ^space/([0-9]+)$ space.php?uid=$1
+    RewriteRule ^space/([0-9]+)$ space.html?uid=$1 [L,QSA]
+
+    # 发帖 /topic/add
+    RewriteRule ^topic/add/?$ send_topic.html?mod=add [L,QSA]
+
+    # 修改帖子 /topic/replace
+    RewriteRule ^topic/replace/([0-9]+)/?$ send_topic.html?mod=replace&tid=$1 [L,QSA]
+
+    # 搜索 /search/{type}/{content}
+    RewriteRule ^search/([^/]+)/([^/]+)$ search.html?type=$1&content=$2 [L,QSA]
+
+    # 个人信息
+    RewriteRule ^msg$ msg.html [L]
+
+    # 注册登录
+    RewriteRule ^register$ register.html [L]
+
+    # 用户管理
+    RewriteRule ^user_admin$ user_admin.html [L]
 </IfModule>

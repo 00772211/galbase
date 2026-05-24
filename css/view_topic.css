@@ -63,17 +63,6 @@
 	position: relative;
 }
 
-.navigation_bar .pannya {
-	position: absolute;
-	top: -40%;
-	right: -30%;
-	width: 100%;
-	transform: scale(0.5);
-	user-select: none;
-	-webkit-user-drag: none;
-	pointer-events: none;
-}
-
 .navigation_bar .auther_data {
 	font-size: 1.3cqw;
 	user-select: text;
@@ -104,6 +93,16 @@
     cursor: pointer;
 }
 
+#content .big_img {
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+#_viewer_img {
+    -webkit-user-drag: none;
+    user-drag: none;
+}
 
 
 /* 资源收入版块gal信息 */
@@ -126,19 +125,7 @@
 	cursor: text;
 }
 
-.gal_info .score {
-	position: absolute;
-	top: 5px;
-	right: 5px;
-	padding: 2px 2px 6px 2px;
-	color: #fff;
-	text-align: left;
-	cursor: pointer;
-	background: #55589A;
-	border-color: #2B2C63;
-	border-radius: 4px;
-	z-index: 5;
-}
+
 
 
 
@@ -372,3 +359,257 @@
 	background-color: #6a7dc7;
 	box-sizing: border-box;
 }
+
+
+
+
+/* 容器：处理阴影、圆角及溢出 */
+.chart-container {
+	width: 100%;
+	max-width: 40%;
+	border-radius: 12px;
+	padding: 40px 20px 50px; 
+	box-sizing: border-box;
+	overflow-x: auto; /* 开启横向滚动 */
+	overflow-y: auto;
+	cursor: grab; /* 默认抓取手型 */
+	user-select: none; /* 拖拽时禁止选中文字 */
+}
+
+/* --- 极简滚动条样式 (回归你喜欢的版本) --- */
+.chart-container::-webkit-scrollbar {
+	height: 8px; /* 滚动条高度 */
+}
+.chart-container::-webkit-scrollbar-thumb {
+	/* 滑块：使用网站配色 rgba(86, 133, 255, 0.4) 的变体 */
+	background: rgba(86, 133, 255, 0.3);
+	border-radius: 4px;
+}
+.chart-container::-webkit-scrollbar-thumb:hover {
+	/* 悬停滑块：变为网站主色 #5685FF */
+	background: #5685FF;
+}
+/* 轨道保持透明，视觉上更干净 */
+
+/* 激活拖拽时的手型 */
+.chart-container:active {
+	cursor: grabbing;
+}
+
+/* 图表绘图区：宽度由内容撑开 */
+.chart {
+	height: 15cqw;
+	position: relative;
+	display: flex;
+	gap: 30px; /* 柱子间的固定间距 */
+	width: max-content; 
+	min-width: 100%; 
+	box-sizing: border-box;
+	/* X 轴底线：使用配色 #E7EAF2 */
+	border-bottom: 3px solid #E7EAF2; 
+}
+
+/* 柱子外层包裹 */
+.bar-wrapper {
+	width: 36px; /* 固定柱子宽度 */
+	flex-shrink: 0; 
+	position: relative;
+	height: 100%;
+}
+
+/* 柱子本体 */
+.bar {
+	width: 100%;
+	background: #5685FF; /* 主色调 */
+	box-shadow: 0 4px 12px rgba(86, 133, 255, 0.4);
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	box-sizing: border-box;
+	position: absolute;
+	bottom: 0;
+	border-radius: 6px 6px 0 0;
+	/* 动画过渡：包含 transform 和 background */
+	transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.3s;
+	cursor: pointer;
+}
+
+/* 柱顶数值 */
+.bar-value {
+	position: absolute;
+	top: -25px;
+	color: #666;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+/* 悬停交互：变为紫色撞色 #7C56E2 */
+.bar:hover {
+	background: linear-gradient(180deg, #7C56E2 0%, #5685FF 100%); 
+	transform: translateY(-6px);
+	box-shadow: 0 8px 18px rgba(124, 86, 226, 0.35);
+}
+
+/* X 轴文字标签 */
+.label {
+    /* 平时截断 */
+    width: 36px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: absolute;
+    bottom: -32px;
+    font-size: 13px;
+    color: #8892a3;
+    transition: all 0.2s;
+}
+
+/* 悬浮柱子时展开标签 */
+.bar-wrapper:hover .label {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    padding: 2px 6px;
+    width: max-content;
+    color: #5685FF;
+    z-index: 20;
+}
+
+/* 平均值虚线：使用紫色撞色 #7C56E2 */
+.avg-line {
+	position: absolute;
+	left: 0;
+	width: 100%; 
+	border-top: 2px dashed #7C56E2; 
+	z-index: 10;
+	pointer-events: none; /* 穿透点击，不影响柱子交互 */
+}
+
+/* 平均值文字标签 */
+.avg-label {
+	position: absolute;
+	left: 0; 
+	color: #7C56E2; 
+	font-size: 12px;
+	background: #ffffff; 
+	padding: 4px 10px;
+	border-radius: 20px;
+	border: 1px solid rgba(124, 86, 226, 0.4); 
+	z-index: 11;
+	transform: translateY(-130%); /* 文字浮在线上方 */
+	font-weight: 600;
+}
+
+#rate main {
+	display: flex;
+	height: 20cqw;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+#rate main .part {
+	padding: 10px;
+    font-size: large;
+    line-height: 1.5em;
+}
+
+/* 221分配 */
+#rate main #slider {
+	flex: 2;
+}
+
+#rate main #user_rate {
+	flex: 2;
+}
+
+#rate main #self_rate {
+	flex: 1;
+	overflow-y: auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	box-sizing: border-box;
+}
+
+#rate #self_rate .submit_button {
+	text-align: center;
+}
+
+/* 用户列表 */
+#user_rate {
+	display: inline-block;
+	background-color: rgba(235, 251, 252, 0.5);
+	overflow-y: auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	box-sizing: border-box;
+}
+
+#user_rate .card {
+	float: left;
+	padding: 8px;
+	width: 100%;
+	border-bottom: 1px dashed #888888;
+	box-sizing: border-box;
+}
+
+#user_rate .card:last-child {
+	border-bottom: 0px;
+}
+
+#user_rate .card:hover {
+	background-color: rgba(189, 240, 160, .5);
+}
+
+#user_rate .card .auther {
+	display: flex;
+	width: 100%;
+	justify-content: left;
+	align-items: center;
+	color: #551A8B;
+	font-weight: bold;
+}
+
+#user_rate .card .avatar {
+	margin-right: 10px;
+	width: 30px;
+	border-radius: 50%;
+	aspect-ratio: 1/1;
+}
+
+#user_rate .card .info {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+#user_rate .card .date img{
+	height: 11px;
+}
+
+#user_rate .card .message img {
+	height: 11px;
+}
+
+#user_rate .card .data {
+	float: left;
+	color: #292a2d;
+}
+
+#user_rate .card .message {
+	float: right;
+	color: #292a2d;
+}
+
+#user_rate .card .content {
+	font-size: 1.1em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#user_rate .card .content span {
+	color: #666666;
+}
+
+

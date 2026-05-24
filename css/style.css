@@ -410,6 +410,9 @@ textarea {
 	width: 18%;
 	height: auto;
 	user-select: none;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .navigation_bar span {
@@ -420,7 +423,6 @@ textarea {
 	cursor: pointer;
 	justify-content: left;
 	align-items: center;
-	background-color: rgba(235, 251, 252, 0.5);
 	transition: all 0.5s;
 }
 
@@ -475,7 +477,9 @@ textarea {
 }
 
 .main_board main {
-	width: 99.6%;
+	padding: 5px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .main_board .sign {
@@ -572,15 +576,14 @@ textarea {
 
 .buttons_ {
 	display: flex;
-	position: absolute;
-	top: 2px;
-	right: 20px;
-	transform: translate(0, 50%);
+	height: 100%;
+	padding-right: 10px;
+	align-items: center;
+	justify-content: flex-end;
 	gap: 5px;
 }
 
 .buttons_ button {
-	float: right;
 	margin-right: 5px;
 }
 
@@ -615,13 +618,17 @@ textarea {
 
 .wide_board {
 	float: left;
-	margin: 10px 0 0 1%;
+	margin: 10px 0 1% 1%;
 	width: 97.5%;
 }
 
 .wide_board main {
-	width: 99.6%;
+	width: 100%;
 }
+
+/* .wide_board main {
+	width: 99.6%;
+} */
 
 
 
@@ -839,6 +846,11 @@ footer a:hover {
 	transition: transform 1s ease-in-out; /* 只控制缩放过渡 */
 }
 
+/* 蓝晶版樱雪 */
+table { border-collapse: collapse; width: 100%; border: 1px solid #c5d0ff; border-radius: 8px; overflow: hidden; } thead tr { background: #7aa4ff; color: #fff; } thead th { padding: 11px 16px; font-weight: 500; text-align: left; } tbody tr:nth-child(odd) { background: #f8f9ff; } tbody tr:nth-child(even) { background: #e8eeff; } tbody td { padding: 10px 16px; border-bottom: 1px solid #d0daff; color: #2a3060; transition: background 0.15s, color 0.15s; } tbody tr:last-child td { border-bottom: none; } tbody tr:hover td { background: #b8ccff !important; color: #0f246e; }
+a { color: #4a72e8; text-decoration: none; transition: color 0.15s; } a:visited { color: #8872cc; /* 偏紫蓝，区分已访问 */ } a:hover { color: #1e3fc0; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #7aa4ff; }
+
+
 /* 控制轮播效果：使用关键帧动画切换图片 */
 @keyframes slide-show {
 	0% {
@@ -870,6 +882,11 @@ footer a:hover {
 .cb-slideshow li:nth-child(4) { animation: slide-show 36s infinite 18s; }
 .cb-slideshow li:nth-child(5) { animation: slide-show 36s infinite 24s; }
 .cb-slideshow li:nth-child(6) { animation: slide-show 36s infinite 30s; }
+
+
+
+
+
 
 @keyframes light_star {
 	0% {

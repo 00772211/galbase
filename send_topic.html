@@ -1,0 +1,89 @@
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name='description' content='GALBase论坛 - Galgame资源站点'>
+	<title>发帖 / 修改帖子</title>
+	<link rel="stylesheet" href="/css/header.css">
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/send_topic.css">
+</head>
+
+
+
+
+<body>
+	<script src="/js/functions.js"></script>
+
+	<div class="header"></div>
+	<script src="/js/header.js"></script>
+
+	<br>
+	<br>
+
+	<div class="board navigation_bar"></div>
+	<script src="/js/navigation_bar.js"></script>
+
+	<div class="board main_board else dynamic_height_flex" id="topic_DOM">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>发</li>
+					<li>布</li>
+					<li>新</li>
+					<li>帖</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+				<div class="buttons_">
+					<button id="send_topic_button" onclick="send_topic()">发帖</button>
+					<button onclick="topic_guide()">发帖指南</button>
+				</div>
+			</header>
+			<main>
+				<div class="input_line">
+					<input type="text" id="topic_title" placeholder="帖子标题(必填)" value="">
+					<select id="target_fid">
+						<option value="">发帖至目标版块</option>
+					</select>
+					<input type="text" id="tags" placeholder="标签，用|号隔开(可不填)" value="">
+					<input type="text" id="cover" placeholder="封面图片aid，用|号隔开(可不填)" value="">
+				</div><br>
+
+				<div class="function_line">
+					<div onclick="GUI_imgs_upload()"><img src="/data/imgs/img.png" loading="lazy" alt="图片加载失败"><br><span>图片上传</span></div>
+					<div onclick="GUI_upload_videos()"><img src="/data/imgs/video.png" loading="lazy" alt="图片加载失败"><br><span>视频上传</span></div>
+					<div onclick="alert('站长目前不知道这个功能能干嘛，暂不开发咯QWQ')"><img src="/data/imgs/file.png" loading="lazy" alt="图片加载失败"><br><span>附件上传</span></div>
+					<div onclick="alert('表情')"><img src="/data/imgs/emoji.png" loading="lazy" alt="图片加载失败"><br><span>表情</span></div>
+					<div onclick="insert_text('<br>')"><img src="/data/imgs/switch_line.png" loading="lazy" alt="图片加载失败"><br><span>换行</span></div>
+					<div onclick="insert_text('[_d ]')"><img src="/data/imgs/img_defense.png" loading="lazy" title="格式：[_d {_i1}{_i2}{_i3}]" alt="图片加载失败"><br><span>防剧透</span></div>
+					<div onclick="insert_text('{?pre\n\n?}')"><img src="/data/imgs/pre.png" loading="lazy" title="格式：{?pre *?}" alt="图片加载失败"><br><span>内容突出</span></div>
+					<div onclick="open_table_guide()"><img src="/data/imgs/table.png" loading="lazy" alt="图片加载失败"><br><span>表格</span></div>
+					<div onclick="insert_text('{_goto}')"><img src="/data/imgs/goto.png" loading="lazy" title="格式：{_goto1}" alt="图片加载失败"><br><span>站内跳转</span></div>
+					<div onclick="insert_text('{?info\n开发:\n流程:\n发行日期:\n适合游玩季节:\nlogo:\nopening:\n?}\n\n{?text\n「」「」\n?}')"><img src="/data/imgs/ai.png" loading="lazy" alt="图片加载失败"><br><span>资源收入</span></div>
+					<div onclick="open_music_gui()"><img src="/data/imgs/music.png" loading="lazy" alt="插入音乐"><br><span>插入音乐</span></div>
+					<div onclick="open_video_gui()"><img src="/data/imgs/video.png" loading="lazy" alt="插入视频"><br><span>插入视频</span></div>
+					<div onclick="insert_subtitle()"><img src="/data/imgs/sub_title.png" loading="lazy" alt="插入子标题"><br><span>子标题</span></div>
+					<div onclick="insert_text('{?MD5\n\n?}')"><img src="/data/imgs/security.png" loading="lazy" title="格式：{?MD5 *?}" alt="图片加载失败"><br><span>MD5</span></div>
+				</div>
+
+				<textarea id="topic_content" placeholder="帖子内容"></textarea>
+
+				<div class="bottom_function">
+					<label class="checkbox" title="使用HTML元素后，所有的快捷标签将失效！">
+						<input type="checkbox" id="only-HTML" onclick="onlyHTML()">
+						<span class="checkmark"></span>
+						<span>仅使用HTML</span>
+					</label>
+				</div>
+			</main>
+		</div>
+	</div>
+
+<script src="/js/send_topic.js"></script>
+<script src="/js/footer.js"></script>
+
+
+
+

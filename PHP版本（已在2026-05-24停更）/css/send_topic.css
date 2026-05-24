@@ -1,0 +1,137 @@
+.else main br {
+	line-height: 0.5em;
+}
+
+.input_line {
+	display: flex;
+	height: 6%;
+	padding-left: 10px;
+	border: 2px solid #5685FF;
+	border-radius: 5px;
+	background-color: #f5f6f7;
+	align-items: center;
+}
+
+.input_line input {
+	width: 20%;
+	margin-right: 10px;
+}
+
+.input_line select {
+	width: 20%;
+	margin-right: 10px;
+}
+
+.input_line select option {
+	font-size: 1.1em;
+}
+
+.input_line select option:first-child {
+	display: none;
+}
+
+/* .function_line {
+	height: 5cqw;
+	padding-left: 10px;
+	border: 2px solid #5685FF;
+	border-radius: 5px;
+	background-color: #f5f6f7;
+}
+
+.function_line div {
+	float: left;
+	text-align: center;
+	transform: scale(0.95);
+} */
+
+.function_line {
+	display: flex;
+	flex-wrap: wrap;  /* 允许换行 */
+	gap: 10px;  /* 控制子元素之间的间距 */
+	border: 2px solid #5685FF;
+	border-radius: 5px;
+	background-color: #f5f6f7;
+}
+
+.function_line div {
+	width: calc(5cqw);  /* 每个 div 占父容器的三分之一减去间距 */
+	text-align: center;
+	transform: scale(0.95);
+}
+
+.function_line div img {
+	max-width: 100%;
+	width: auto;
+	height: 4cqw;
+}
+
+.function_line span {
+	display: inline-block;
+	margin-top: 5%;
+}
+
+.else textarea {
+	margin-top: 2%;
+	width: 100%;
+	height: 50%;
+}
+
+
+
+
+
+/* 图片卡片 */
+#imgs .card {
+	position: relative;
+	float: left;
+	padding: 2px;
+	width: 20%;
+	box-sizing: border-box;
+}
+
+/* 卡片内的图片 */
+#imgs .card img {
+	width: 100%;
+	cursor: pointer;
+}
+
+/* 卡片内的进度条 */
+#imgs .card progress {
+	width: 100%;
+	height: 4px;
+	background-color: black;
+}
+
+/* 进度条没到100% */
+#imgs .card progress::-webkit-progress-value {
+	background-color: red;
+}
+
+/* 进度条100% */
+#imgs .card progress[value="100"]::-webkit-progress-value {
+	background-color: greenyellow;
+}
+
+
+/* 图片删除 */
+#imgs .card .remove {
+	position: absolute;
+	top: 0;
+	right: 0;
+	font-size: small;
+	cursor: pointer;
+	background-color: whitesmoke;
+}
+
+/* 图片aid */
+#imgs .card .aid {
+	position: absolute;
+	bottom: 6px;
+	right: 0;
+	font-size: small;
+	background-color: whitesmoke;
+}
+
+.bottom_function {
+	margin-top: 5px;
+}

@@ -1,0 +1,116 @@
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name='description' content='GALBase论坛 - Galgame资源站点'>
+	<title></title>
+	<!-- css -->
+	<link rel="stylesheet" href="/css/header.css">
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/space.css">
+
+	<style>
+		/* 每条通知 */
+		.msgs li {
+			text-align: left;
+			overflow: auto;
+		}
+
+		.none_read {
+			background-color: #D6790E;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		.else {
+			width: 90%;
+			margin-left: 5%;
+		}
+	</style>
+
+</head>
+<body>
+	<script src="/js/functions.js"></script>
+
+	<div class="header"></div>
+	<script src="/js/header.js"></script>
+
+	<br>
+	<br>
+
+	<div class="board main_board else">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>个</li>
+					<li>人</li>
+					<li>空</li>
+					<li>间</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+			</header>
+			<main>
+				<div class="left">
+					<div class="card">
+						<div class="split">
+							<img class="shool_logo" src="/data/imgs/pannya_icon.png" alt="图片加载失败">
+							<span class="name">结姬学园 / 各务台学园</span>
+							<img class="telescope" src="/data/imgs/telescope_white.png" alt="图片加载失败">
+						</div>
+
+						<div class="info">
+							<div class="avatar"><img src="" alt="空间作者头像" onclick="fullscreen_avatar(this)"></div>	
+							<div class="student">
+								<span id="uname">学生：</span>
+								<span id="academic_year">学年：</span>
+								<span id="identity">身份：</span>
+							</div>
+						</div>
+
+						<div class="footer">
+							<span class="reg">入学时间：</span>
+							<span class="last">最后在校时间：</span>
+						</div>
+
+					</div>
+				</div>
+
+				<div class="right">
+					<div class="window">
+						<div class="title">已经推完的Galgame</div>
+						<ul class="content">
+						</ul>
+					</div>
+				</div><br>
+			</main>
+
+			<main>
+				<div class="collection">
+					<span class="title">收藏的帖子</span>
+					<ul class="topics">
+					</ul>
+				</div>
+			</main>
+
+			<main class="best_works_f">
+				<div class="best_works">
+					<span class="title">推荐此生必玩之作</span>
+					<ul class="works"></ul>
+				</div>
+			</main>
+		</div>
+	</div>
+</body>
+
+
+<script src="/js/space.js"></script>
+<script src="/js/footer.js"></script>
+
+
+
+

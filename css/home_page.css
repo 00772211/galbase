@@ -21,7 +21,9 @@
 	display: inline-block;
 	width: 29%;
 	background-color: rgba(235, 251, 252, 0.5);
-	overflow: hidden;
+	overflow-y: auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 	box-sizing: border-box;
 }
 
@@ -35,6 +37,10 @@
 
 .op_board .newest_topic .card:last-child {
 	border-bottom: 0px;
+}
+
+.op_board .newest_topic .card:hover {
+	background-color: rgba(189, 240, 160, .5);
 }
 
 .op_board .newest_topic .card .auther {
@@ -105,18 +111,85 @@
 	box-sizing: border-box;
 	overflow: hidden;
 	background-color: #f5f6f7;
-	transition: all 0.25s;
 }
 
 .section_board:hover {
 	background-color: rgba(189, 240, 160, .5);
 }
 
-.section_board img {
+.section_board .cover {
 	height: 100%;
 	float: left;
 }
 
+.section_board ul {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.section_board ul li {
+	line-height: 1.2;
+	flex: 1;
+	font-size:1cqw;
+	font-weight: 400;
+	overflow: hidden;
+	align-items: center;
+}
+
+.section_board ul li a {
+	color: #666;
+}
+
+.section_board ul li span {
+	color: #666;
+}
+
+.section_board ul li .num {
+	float: right;
+	margin-right: 10px;
+	font-size:1cqw;
+	font-weight: 400;	
+}
+
+.section_board ul li img {
+	height: 50%;
+	margin-left: 10px;
+	margin-right: 2px;
+}
+
+.section_board .title {
+	font-size:1.1cqw;
+	font-weight: 700;
+	color: #333;
+	text-decoration: none;
+}
+
+.section_board .title:visited {
+	color: #333;
+}
+
+.section_board .title:hover {
+	color: #FC6403;
+	text-decoration: underline;
+}
+
+.section_board .topic {
+	margin-left: 10px;
+	
+	white-space: nowrap;
+	text-decoration: underline;
+}
+
+
+
+
+
+/* .section_board img {
+	height: 100%;
+	float: left;
+} */
+/* 
 .section_board .line {
 	height: 30%;
 	width: 70%;
@@ -142,41 +215,13 @@
 }
 
 
-.section_board .title {
-	position: relative;
-	height: 40%;
-	color: #333;
-	font-size:1.1cqw;
-	font-weight: 700;
-}
 
-.section_board .title a {
-	color: #333;
-	text-decoration: none;
-}
 
-.section_board .title a:visited {
-	color: #333;
-}
+ */
 
-.section_board .title a:hover {
-	color: #FC6403;
-	text-decoration: underline;
-}
 
-.section_board .title .topic_number {
-	position: absolute;
-	right: 10px;
-	color: #666;
-	font-size:1cqw;
-	font-weight: 400;
-}
 
-/* 
-.section_board .info a {
-	color: #333;
-    text-decoration: none;
-} */
+
 
 
 /* 首页推送5个GAL */

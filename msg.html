@@ -1,0 +1,71 @@
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name='description' content='GALBase论坛 - Galgame资源站点'>
+	<title>个人通知</title>
+	<!-- css -->
+	<link rel="stylesheet" href="/css/header.css">
+	<link rel="stylesheet" href="/css/style.css">
+
+	<style>
+		/* 每条通知 */
+		.msgs li {
+			text-align: left;
+			overflow: auto;
+		}
+
+		.none_read {
+			background-color: #D6790E;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		.else {
+			width: 90%;
+			margin-left: 5%;
+		}
+	</style>
+</head>
+<body>
+	<script src="/js/functions.js"></script>
+
+	<div class="header"></div>
+	<script src="/js/header.js"></script>
+
+	<br>
+	<br>
+
+	<div class="board main_board else">
+		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img src="/data/imgs/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>个</li>
+					<li>人</li>
+					<li>通</li>
+					<li>知</li>
+				</ul>
+				<img src="/data/imgs/title_end.png" class="title_end">
+				<div class="buttons_">
+					<button onclick="finish_read()">全部标为已读</button>
+					<select id="year" style="padding: 0 1cqw 0 1cqw">
+					</select>
+				</div>
+
+			</header>
+			<main>
+				<ul class="msgs">
+				</ul>
+			</main>
+		</div>
+	</div>
+
+
+
+<script src="/js/msg.js"></script>
+<script src="/js/footer.js"></script>

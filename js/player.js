@@ -508,7 +508,7 @@ music_next.onclick = function() {
 // 
 // 若在帖子页，添加到回复区
 // 
-const full_url = window.location.href
-if (full_url.includes("/topic/")) {
-    move_to_reply()
-}
+// const full_url = window.location.href
+// if (full_url.includes("/topic/")) {
+    
+// }

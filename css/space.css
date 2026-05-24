@@ -43,6 +43,7 @@
 	position: relative;
 	padding-top: 2px;
 	width: 100%;
+	height: 14cqw;
 	border-radius: 10px;
 	background-color: #E7EAF2;
 }
@@ -62,11 +63,12 @@
 }
 
 .card .avatar img {
-	width: 100%;
+	height: 8cqw;
     border: white 6px solid;
     border-radius: 15%;
     transform: scale(0.95);
     box-sizing: border-box;
+	cursor: pointer;
 }
 
 .card .avatar:fullscreen {
@@ -124,6 +126,7 @@
 .window {
 	padding: 10px;
 	width: 100%;
+	height: 14cqw;
 	max-height: 100%;
 	border-radius: 10px;
 	background-color: #E7EAF2;
@@ -143,7 +146,7 @@
 }
 
 .window .content {
-	max-height: 100px;
+	height: 10cqw;
 	overflow-y: scroll;
 	
 }
