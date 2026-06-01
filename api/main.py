@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
         host='localhost',
         port=3306,
         user='root',
-        password='ss123321',
+        password='',
         db='galbase',
         minsize=2,
         maxsize=5, 
