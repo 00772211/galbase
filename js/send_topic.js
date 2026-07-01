@@ -2,6 +2,7 @@
 const PATH = window.location.pathname
 var HTML
 var TOPIC
+var LOST_CHUNKS
 const DOM_title = document.querySelector("#topic_title")
 const DOM_fid = document.querySelector("#target_fid")
 const DOM_tags = document.querySelector("#tags")
@@ -64,7 +65,8 @@ function request_board() {
 		DOM_fid.insertAdjacentHTML("beforeend", `<option value="3-1">未开通&emsp;&emsp;- ${res['data']['3-1']}</option>`)
 		DOM_fid.insertAdjacentHTML("beforeend", `<option value="3-2">汉化组&emsp;&emsp;- ${res['data']['3-2']}</option>`)
 	}).catch(err => {
-		console.log(`帖子请求失败: ${err.message}`)
+		send_danmuku("错误", "板块信息请求失败！自动重试中！")
+		log(`板块信息请求失败: ${err}`)
 		setTimeout(request_board, 1000)
 	})
 }
@@ -72,6 +74,7 @@ function request_board() {
 if (LOGIN == true) {
 	request_board()
 }
+
 
 
 // 
@@ -93,13 +96,20 @@ const select_board = () => {
 // 
 function request_topic() {
 	fetch_API("GET", `${API}/topic/${TID}`, {tags_decode: true, finger: FINGER}).then(res => {
+		float_window.close()
 		TOPIC = res['data']['topic']
 		DOM_title.value = TOPIC['title']
 
 		// tag用 | 拼接
 		if (TOPIC['tags_decode']) {
-			const TAG = Object.values(TOPIC['tags_decode'])
-			DOM_tags.value = TAG.join("|")
+
+			let TAGS = []
+			TOPIC['tags'].split("|").forEach((id, i) => {
+				var TAG = TOPIC['tags_decode'][id]
+				TAGS.push(TAG)
+			})
+			DOM_tags.value = TAGS.join("|")
+
 		}
 
 		if (TOPIC['preview']) {
@@ -112,12 +122,17 @@ function request_topic() {
 		select_board()
 
 	}).catch(err => {
-		console.log(`帖子请求失败: ${err.message}`)
+		send_danmuku("错误", "帖子请求失败！自动重试中！")
+		log(`帖子请求失败: ${err}`)
 		setTimeout(request_topic, 1000)
 	})
 }
 
 if (MOD == "replace") {
+	float_window.title("提示")
+	float_window.content("帖子数据正在来的路上！数据传输完成时会自动为您关闭此窗口！")
+	float_window.open()
+	float_window.lock(3)
 	request_topic()
 }
 
@@ -178,6 +193,21 @@ const send_topic = () => {
 	fetch_API("POST", `${API}/topic`, {}, data).then(res => {
 		if (res['error']) {
 			float_window.title("错误")
+
+			// 重复发帖自动跳转
+			if (res['error'].includes("重复发帖")) {
+				float_window.content(`${res['error']}<br>将在3秒后自动跳转到目标帖子！`)
+				float_window.open()
+				float_window.lock(3)
+
+				// 从错误里提取目标tid。
+				const target_tid = res['error'].split(":")[1]
+				setTimeout(() => {
+					window.location.href = `/topic/${target_tid}`
+				}, 3000)
+				return
+			}
+
 			float_window.content(`${res['error']}`)
 			float_window.open()
 			return
@@ -190,14 +220,9 @@ const send_topic = () => {
 			window.location.href = `/topic/${res['data']}`
 		}, 3000)
 	}).catch(err => {
-		float_window.title("错误")
-		float_window.content(`${err.message}`)
-		float_window.open()
-// 		if (error.message === '请求超时') {
-// 			float_window.content("发帖超时！<br>原因：可能是网络发生了丢包 / 服务器宕机了<br>您可以新打开个主页看看有没有自己的帖子，若没有请重新点击发帖再次发帖！")
-// 		} else {
-// 			float_window.content("发帖出现未知错误！<br>原因：可能是网络发生了丢包 / 服务器宕机了 / 其他未知问题<br>您可以新打开个主页看看有没有自己的帖子，若没有请重新点击发帖再次发帖！")
-// 		}
+		send_danmuku("错误", "发帖失败！自动重试中！")
+		log("发帖失败", err)
+		setTimeout(send_topic, 1000)
 	})
 }
 
@@ -236,9 +261,9 @@ const replace_topic = () => {
 			window.location.href = `/topic/${res['data']}`
 		}, 3000)
 	}).catch(err => {
-		float_window.title("错误")
-		float_window.content(`${err.message}`)
-		float_window.open()
+		send_danmuku("错误", "修改发帖失败！自动重试中！")
+		console.log("修改发帖失败", err);
+		setTimeout(replace_topic, 1000)
 	})
 }
 
@@ -359,7 +384,7 @@ const load_topic_imgs = () => {
 		res['data'].forEach((img, i) => {
 			HTML = `
 				<div class="card" id="_${img['name']}">
-					<img src="${img['path']}" loading="lazy" alt="图片加载失败" onclick="insert_text('{_i${img['name']}}')">
+					<img src="${img['path']}" alt="图片加载失败" onclick="insert_text('{_i${img['name']}}')">
 					<progress value="100" max="100"></progress>
 					<span class="remove" onclick="delete_img('${img['name']}')">删除</span>
 					<span class="aid">aid:${img['name']}</span>
@@ -368,9 +393,9 @@ const load_topic_imgs = () => {
 			DOM_imgs.insertAdjacentHTML("beforeend", HTML)
 		})
 	}).catch(err => {
-		float_window.title("错误")
-		float_window.content(`${err.message}`)
-		float_window.open()
+		send_danmuku("错误", "帖子图片加载失败，自动重新请求！")
+		log("帖子图片加载失败", err)
+		setTimeout(load_topic_imgs, 1000)
 	})
 }
 
@@ -404,9 +429,11 @@ const delete_img = (aid) => {
 		}
 		document.querySelector(`#_${aid}`).innerHTML = ''
 	}).catch(err => {
-		float_window.title("错误")
-		float_window.content(`${err.message}`)
-		float_window.open()
+		send_danmuku("错误", "图片删除失败！自动重试中！")
+		log("图片删除失败", err)
+		setTimeout(() => {
+			delete_img(aid)
+		}, 1000)
 	})
 }
 
@@ -475,9 +502,7 @@ function img_zip(id, file) {
 							var res = JSON.parse(xhr.responseText)
 
 							if (res['error']) {
-								float_window.title("错误")
-								float_window.content(res['error'])
-								float_window.open()
+								send_danmuku("系统", `${res['error']}`)
 								return
 							}
 
@@ -493,7 +518,7 @@ function img_zip(id, file) {
 							document.querySelector(`#_${aid} .remove`).textContent = '删除'
 							document.querySelector(`#_${aid} .remove`).setAttribute("onclick", `delete_img('${aid}')`)
 
-							// // 赋予图片插入code
+							// 赋予图片插入code
 							document.querySelector(`#_${aid} img`).setAttribute("onclick", `insert_text('{_i${aid}}')`)
 						} catch (error) {
 							alert(`请求失败：${error}`)
@@ -554,7 +579,7 @@ const GUI_upload_videos = () => {
 			<button onclick="chunks_upload()">2-视频上传</button>
 			<button onclick="check_chunks()">3-切片检查</button>
 			<button onclick="combine_chunks()">4-视频合并</button>
-			<button onclick="target_chunk_upload()">5-指定上传</button>
+			<button onclick="target_chunk_upload()">5-缺片上传</button>
 			<input type="file" accept="video/mp4, video/webm, video/x-msvideo" id="upload_video" hidden>
 		</div><br>
 		<div id="videos">
@@ -597,9 +622,9 @@ const load_topic_videos = () => {
 		})
 		document.querySelector('#float_window .function span').textContent = "已加载全部视频"
 	}).catch(err => {
-		float_window.title("错误")
-		float_window.content(`${err.message}`)
-		float_window.open()
+		log("视频加载失败", err)
+		send_danmuku("错误", "视频加载失败！自动重试中！")
+		setTimeout(load_topic_videos, 1000)
 	})
 }
 
@@ -718,6 +743,8 @@ const check_chunks = () => {
 			return
 		}
 
+		LOST_CHUNKS = res['data']
+
 		var lost = res['data'].join()
 		if (lost == "") {
 			document.querySelector(".function span").textContent = '切片完整！可以进行下一步！'
@@ -726,62 +753,51 @@ const check_chunks = () => {
 		}
 		
 	}).catch(err => {
-		float_window.title("错误")
-		float_window.content(`${err.message}`)
-		float_window.open()
+		log("切片检查错误", err)
+		send_danmuku("错误", "切片检查失败！自动重试中！")
+		setTimeout(check_chunks, 1000)
 	})
 }
 
 
 
 // 
-// 指定切片上传
+// 缺片上传
 // 
 const target_chunk_upload = () => {
-	// 未进行切片
-	if (chunks_info['chunks'].length == 0) {
-		document.querySelector(".function span").textContent = '没有进行切片！不能进行上传！'
+	if (!LOST_CHUNKS) {
+		alert("请先进行“3-切片检查”再执行这个！")
 		return
 	}
-
-	const target = prompt('请输入你需要指定上传的切片序号');
-	if (!target) {
-		document.querySelector(".function span").textContent = '未指定切片序号！'
-		return;
-	}
-
-	if (!Number(target)) {
-		document.querySelector(".function span").textContent = '指定切片序号不为整数！'
-		return;
-	}
-
+	
 	document.querySelector(".function span").textContent = '指定切片正在上传，请耐心等待！'
 
-	
-	query = {}
+	var query = {}
 	if (MOD == "replace") {
 		query = {tid: TID}
 	}
+	LOST_CHUNKS.forEach(chunk => {
 
-	// 定义文件名file
-	var data = new FormData()
-	data.append(
-		"file",
-		chunks_info['chunks'][target],
-		`video.mp4.${target}`
-	)
+		// 定义文件名file
+		var data = new FormData()
+		data.append(
+			"file",
+			chunks_info['chunks'][chunk],
+			`video.mp4.${chunk}`
+		)
 
-	fetch_API("POST", `${API}/topic/videos`, query, data).then(res => {
-		if (res['error']) {
-			float_window.title("错误")
-			float_window.content(`${res['error']}`)
-			float_window.open()
-			return
-		}
+		fetch_API("POST", `${API}/topic/videos`, query, data).then(res => {
+			if (res['error']) {
+				float_window.title("错误")
+				float_window.content(`${res['error']}`)
+				float_window.open()
+				return
+			}
 
-		document.querySelector('#float_window .function span').textContent = "切片上传完成！"
-	}).catch(err => {
-		document.querySelector('#float_window .function span').textContent = "切片上传失败"
+			document.querySelector('#float_window .function span').textContent = `切片${chunk}上传完成！`
+		}).catch(err => {
+			document.querySelector('#float_window .function span').textContent = `切片${chunk}上传失败`
+		})
 	})
 }
 
@@ -863,7 +879,11 @@ const delete_video = (vid) => {
 		load_topic_videos()
 	
 	}).catch(err => {
-		alert(err.message)
+		log("视频删除失败", err)
+		send_danmuku("错误", "视频删除失败！自动重试中！")
+		setTimeout(() => {
+			delete_video(vid)
+		}, 1000)
 	})
 }
 
@@ -1021,6 +1041,72 @@ function topic_guide() {
 	`)
 	float_window.open()
 }
+
+
+
+// 
+// 资源收入格式生成
+// 
+const GUI_gal_format_create = () => {
+	float_window.title("格式生成")
+	float_window.content(`
+		<input type="text" id="vndb_url" placeholder="VNDB GAL页链接" value="">
+		<button onclick="vndb_find()">搜索并生成</button>
+		<button onclick="vndb_find_insert()">插入</button>
+		<div class="limit">
+			<pre>{?info\n开发:\n流程:\n发行日期:\n适合游玩季节:\nlogo:\nopening:\n?}\n\n{?text\n「」「」\n?}</pre>
+		</div>
+	`)
+	float_window.open()
+}
+
+
+
+// 
+// 搜索并生成
+// 
+const vndb_find = () => {
+	// 请求锁，防止过量请求
+	if (small_lock()) {
+		return
+	}
+	const vndb_url = document.querySelector("#vndb_url").value
+	if (!vndb_url) {
+		send_danmuku("错误", "请输入VNDB GAL页面链接！")
+		return
+	}
+
+	fetch_API("GET", `${API}/vndb/gal`, {url: vndb_url}).then(res => {
+		document.querySelector("#float_window .limit pre").textContent = 
+`{?info
+开发:${res['data']['developer']}
+流程:${res['data']['play_time']}
+发行日期:${res['data']['date']}
+适合游玩季节:
+logo:
+opening:
+?}
+
+{?text
+「${res['data']['cn_title']}」「${res['data']['title']}」
+?}`
+	}).catch(err => {
+		log("VNDB查找失败", err)
+		send_danmuku("错误", "查找失败，自动重试中！")
+		setTimeout(vndb_find, 1000)
+	})
+}
+
+
+
+// 
+// 搜索到的插入
+// 
+const vndb_find_insert = () => {
+	insert_text(document.querySelector("#float_window .limit pre").textContent)
+	float_window.close()
+}
+
 
 
 

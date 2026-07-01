@@ -70,6 +70,7 @@ class fid_enum(str, Enum):
 class sort_type(str, Enum):
     tid = "tid"
     score = "score"
+    last_modify = "last_modify"
 
 class filter_type(str, Enum):
     normal = "pass"

@@ -11,18 +11,36 @@ if (LOGIN == false) {
 }
 
 
+// 
+// 全局变量
+// 
+var CONFIG_FETCH
+var CONFIG_VALUE
+var USER_DATA
+
+
 
 // 
 // 请求用户数据
 // 
 function request_user_data() {
     fetch_API("GET", `${API}/user/${UID}`).then(res => {
+        log("用户数据", res)
+        USER_DATA = res['data']
+
+        // 更新心路历程
         document.querySelector(".avatar_big").src = res['data']['user']['avatar_big']
+        document.querySelector(".avatar_big").hidden = false
         document.querySelector("#sign").value = res['data']['user']['sign']
         document.querySelector("#sign_img").value = res['data']['user']['sign_img']
         document.querySelector("#best_love_story").value = res['data']['user']['best_love_story']
         document.querySelector("#playing_story").value = res['data']['user']['playing_story']
         document.querySelector("#recommend_stories").value = res['data']['user']['recommend_stories']
+
+        // 更新升学
+        document.querySelector("#identity").textContent = res['data']['user']['identity']
+        document.querySelector("#academic_year").textContent = res['data']['user']['academic_year']
+        document.querySelector("#level").textContent = res['data']['user']['level']
 
     }).catch(err => {
         console.log(`用户数据请求失败: ${err.message}`);
@@ -162,24 +180,26 @@ const user_data_update = () => {
 const replace_avatar = () => {
     float_window.title("更换头像")
     HTML = `
-        <div id="uploadBox" hidden>
-            <label for="upload" id="uploadLabel">点击选择图片</label>
-            <input type="file" accept="image/*" id="upload">
-        </div>
-
-
-        <div>
-            <div id="previewWrapper">
-                <img id="preview" name="预览头像" style="width: 100%">
-                <div id="selectionBox">
-                    <div id="resizeHandle"></div>
-                </div>
+        <div class="limit">
+            <div id="uploadBox" hidden>
+                <label for="upload" id="uploadLabel">点击选择图片</label>
+                <input type="file" accept="image/*" id="upload">
             </div>
-            <button onclick="select_img()">选择图片</button>
-            <button id="downloadButton">上传头像</button>
-        </div>
 
-        <div id="avatar_upload_state"></div>
+
+            <div>
+                <div id="previewWrapper">
+                    <img id="preview" name="预览头像" style="width: 100%">
+                    <div id="selectionBox">
+                        <div id="resizeHandle"></div>
+                    </div>
+                </div>
+                <button onclick="select_img()">选择图片</button>
+                <button id="downloadButton">上传头像</button>
+            </div>
+
+            <div id="avatar_upload_state"></div>
+        </div>
     `
     float_window.content(HTML)
     float_window.open()
@@ -424,27 +444,14 @@ const select_avatar = () => {
                     return
                 }
 
-                document.querySelector("#avatar_upload_state").textContent = "上传完成！"
-                float_window.title("提示")
-                float_window.content(`${res['data']}`)
-                float_window.open()
+                document.querySelector("#avatar_upload_state").textContent = "头像上传成功！可以按Ctrl+F5强制刷新显示新头像！"
+                set_cookie("avatar_small", res['data']['small'])
 
             }).catch(err => {
                 float_window.title("错误")
                 float_window.content(`${err.message}`)
                 float_window.open()
             })
-
-
-
-
-
-            // const result = await fetch_API(
-            //     "POST",
-            //     "/api/avatar",
-            //     {},
-            //     formData
-            // );
         }, 'image/jpeg', 1)
     }
 
@@ -463,4 +470,106 @@ const select_avatar = () => {
 
     // 绑定选择框和缩放手柄事件
     bindSelectionEvents();
+}
+
+
+
+// 
+// 加载配置
+// 
+const DOM_remove_koharu = document.querySelector("#remove_koharu")
+if (get_cookie("remove_koharu") == 1) {
+    DOM_remove_koharu.checked = true
+}
+
+const DOM_no_log_online = document.querySelector("#no_log_online")
+if (get_cookie("no_log_online") == 1) {
+    DOM_no_log_online.checked = true
+}
+
+const DOM_no_imgs_defense = document.querySelector("#no_imgs_defense")
+if (get_cookie("no_imgs_defense") == 1) {
+    DOM_no_imgs_defense.checked = true
+}
+
+
+
+// 去掉小春
+DOM_remove_koharu.addEventListener("change", function() {
+    CONFIG_FETCH = "remove_koharu"
+    if (this.checked) {
+        CONFIG_VALUE = "1"
+    } else {
+        CONFIG_VALUE = "0"
+    }
+    update_config()
+})
+
+// 不记录在线时间
+DOM_no_log_online.addEventListener("change", function() {
+    CONFIG_FETCH = "no_log_online"
+    if (this.checked) {
+        CONFIG_VALUE = "1"
+    } else {
+        CONFIG_VALUE = "0"
+    }
+    update_config()
+})
+
+// 取消图片剧透
+DOM_no_imgs_defense.addEventListener("change", function() {
+    CONFIG_FETCH = "no_imgs_defense"
+    if (this.checked) {
+        CONFIG_VALUE = "1"
+    } else {
+        CONFIG_VALUE = "0"
+    }
+    update_config()
+})
+
+
+// 
+// 更新配置
+// 
+const update_config = () => {
+    fetch_API("PUT", `${API}/user/config`, {}, {fetch: CONFIG_FETCH, value: CONFIG_VALUE}).then(res => {
+        if (res['error']) {
+            float_window.title("错误")
+            float_window.content(`${res['error']}`)
+            float_window.open()
+            return
+        }
+
+        float_window.title("提示")
+        float_window.content(`${res['data']}`)
+        float_window.open()
+
+    }).catch(err => {
+        console.log("用户配置更新错误", err.message)
+        setTimeout(update_config, 1000);
+    })
+}
+
+
+
+// 
+// 升学
+// 
+const level_up = () => {
+    fetch_API("PUT", `${API}/user/level_up`).then(res => {
+        if (res['error']) {
+            float_window.title("错误")
+            float_window.content(`${res['error']}`)
+            float_window.open()
+            return
+        }
+
+        float_window.title("恭喜")
+        float_window.content(`${res['data']}`)
+        float_window.open()
+
+    }).catch(err => {
+        console.log("升学错误", err.message)
+        setTimeout(level_up, 1000);
+    })
 }

@@ -1,40 +1,55 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # 静态资源直接放行
+    # =========================
+    # 1. 静态资源放行
+    # =========================
     RewriteRule ^(css|js|img|images)/ - [L]
 
-    # 如果请求的文件或目录不存在
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    # =========================
+    # 2. 已定义路由（核心页面）
+    # =========================
 
-    # 匹配 `/topic/{tid}` 
+    # topic 详情
     RewriteRule ^topic/([-0-9]+)$ view_topic.html?tid=$1 [L,QSA]
-    
-    # 匹配 `/forum/{fid}/{page}`
-    RewriteRule ^forum/([-0-9]+)/([0-9]+)$ forum.html?fid=$1&page=$2 [L,QSA]
 
-    # 匹配 `/forums/{fid}/{page}/{sort}`
-    RewriteRule ^forums/([-0-9]+)/([0-9]+)/([A-z]+)$ forum.html?fid=$1&page=$2&sort=$3 [L,QSA]
-
-    # 匹配 `/space/{uid}` 
-    RewriteRule ^space/([0-9]+)$ space.html?uid=$1 [L,QSA]
-
-    # 发帖 /topic/add
+    # topic 添加
     RewriteRule ^topic/add/?$ send_topic.html?mod=add [L,QSA]
 
-    # 修改帖子 /topic/replace
+    # topic 修改
     RewriteRule ^topic/replace/([0-9]+)/?$ send_topic.html?mod=replace&tid=$1 [L,QSA]
 
-    # 搜索 /search/{type}/{content}
+    # forum
+    RewriteRule ^forum/([-0-9]+)/([0-9]+)$ forum.html?fid=$1&page=$2 [L,QSA]
+
+    # forums（带排序）
+    RewriteRule ^forums/([-0-9]+)/([0-9]+)/([A-Za-z]+)$ forum.html?fid=$1&page=$2&sort=$3 [L,QSA]
+
+    # space
+    RewriteRule ^space/([0-9]+)$ space.html?uid=$1 [L,QSA]
+
+    # search
     RewriteRule ^search/([^/]+)/([^/]+)$ search.html?type=$1&content=$2 [L,QSA]
 
-    # 个人信息
+    # 其他页面
     RewriteRule ^msg$ msg.html [L]
-
-    # 注册登录
     RewriteRule ^register$ register.html [L]
-
-    # 用户管理
     RewriteRule ^user_admin$ user_admin.html [L]
+
+    # =========================
+    # 3. 放行真实文件/目录
+    # =========================
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # =========================
+    # 4. 排除 API（非常重要）
+    # =========================
+    RewriteRule ^api/ - [L]
+
+    # =========================
+    # 5. 所有非法路径 → 首页
+    # =========================
+    RewriteRule . / [R=301,L]
 </IfModule>

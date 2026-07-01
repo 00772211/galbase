@@ -68,7 +68,7 @@ function request_user_space() {
             HTML = `
 				<li id="_0">
 					<div class="cover">
-						<img src="/data/imgs/yingmei.jpg" title="点击添加一个作品" onclick="open_add_story()" alt="添加作品">
+						<img data-src="/yingmei.jpg" title="点击添加一个作品" onclick="open_add_story()" alt="添加作品">
 					</div>
 
 					<a class="work_title" title="点击添加一个作品" onclick="open_add_story()" style="cursor: pointer;">点击添加一个作品</a>

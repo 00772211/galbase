@@ -1,3 +1,6 @@
+const DOM_no_H = document.getElementById("no_H")
+const DOM_only_H = document.getElementById("only_H")
+
 // 
 // 全局变量
 // 
@@ -6,17 +9,30 @@ PATH = PATH.split("/")
 
 const FID = PATH[2]
 const PAGE = parseInt(PATH[3])
-var NAV
 
-var SORT = "tid"
-if (PATH[1] == "forums") {
-	SORT = PATH[4]
+// 排序方法
+var SORT = "last_modify"
+if (get_cookie("SORT1-1")) {
+	SORT = get_cookie("SORT1-1")
 }
 document.querySelector("#sort").value = SORT
 
-var FILTER = "pass"
-if (get_cookie("filter")) {
-	FILTER = get_cookie("filter")
+// 默认过滤方法
+var FILTER = ['pass']
+if (LOGIN == false && !get_cookie("no_H")) {
+	FILTER.push("no_H")
+	DOM_no_H.checked = true
+}
+
+if (get_cookie("no_H") == 1) {
+	FILTER.push("no_H")
+	DOM_no_H.checked = true
+}
+
+var ONLY_H = false
+if (get_cookie("only_H") == 1) {
+	FILTER.push("only_H")
+	DOM_only_H.checked = true
 }
 
 
@@ -45,7 +61,7 @@ document.querySelector(".page span").textContent = ` 当前页数： ${PAGE}`
 // 请求帖子
 // 
 function request_topics() {
-	const topics_region = document.querySelector('#topics')
+	const DOM_topics = document.querySelector('#topics')
 
 	var data = {
 		"sort": SORT,
@@ -64,7 +80,7 @@ function request_topics() {
 				
 				// 无封面处理
 				if (!topic['preview']) {
-					var preview = "/data/imgs/yingmei_small.jpg"
+					var preview = `${SRC}/yingmei_small.jpg`
 				} else {
 					var preview = `${topic['url']}/preview.avif`
 				}
@@ -102,7 +118,7 @@ function request_topics() {
 
 				// 1-1板块卡片式添加评分
 				if (FID == "1-1") {
-					var score_html = `<span class="score"><img src="/data/imgs/rate.png" alt="评分">${topic['score']['avg']}(${topic['score']['count']})</span>`
+					var score_html = `<span class="score"><img src="${SRC}/rate.png" alt="评分">${topic['score']['avg']}(${topic['score']['count']})</span>`
 				} else {
 					var score_html = ""
 				}
@@ -118,15 +134,32 @@ function request_topics() {
 							${tags_html}
 						</ul>
 						<div class="info">
-							<img class="avatar" src="${topic['auther']['avatar_small']}" loading="lazy" alt="图片加载失败">
+							<img src="${topic['auther']['avatar_small']}" class="avatar" loading="lazy" alt="图片加载失败">
 							<a href="/space/${topic['auther']['uid']}" class="uname" target="_blank" title="查看TA的空间">${topic['auther']['uname']}</a>
 							${score_html}
-							<span class="reply"><img src="/data/imgs/reply.png" alt="回复数">${topic['reply_count']}</span>
-							<span class="view"><img src="/data/imgs/view.png" alt="浏览数">${topic['view_count']}</span>
+							<span class="reply"><img src="${SRC}/reply.png" alt="回复数">${topic['reply_count']}</span>
+							<span class="view"><img src="${SRC}/view.png" alt="浏览数">${topic['view_count']}</span>
 						</div>
 					</div>
 				`
-				topics_region.insertAdjacentHTML("beforeend", html)
+				DOM_topics.insertAdjacentHTML("beforeend", html)
+
+				// 竖图检测（1-4 板块已固定竖向比例，无需检测）
+				if (FID !== "1-4") {
+					const lastCard = DOM_topics.lastElementChild
+					const coverImg = lastCard.querySelector('.cover img')
+					const cover    = lastCard.querySelector('.cover')
+					const checkPortrait = () => {
+						if (coverImg.naturalHeight > coverImg.naturalWidth) {
+							cover.classList.add('portrait')
+						}
+					}
+					if (coverImg.complete && coverImg.naturalWidth > 0) {
+						checkPortrait()
+					} else {
+						coverImg.addEventListener('load', checkPortrait)
+					}
+				}
 
 			// 列表式
 			} else {
@@ -168,7 +201,7 @@ function request_topics() {
 						</div>
 					</div>
 				`
-				topics_region.insertAdjacentHTML("beforeend", html)
+				DOM_topics.insertAdjacentHTML("beforeend", html)
 			}
 		})
 	}).catch(err => {
@@ -190,12 +223,7 @@ last_page_button.addEventListener('click', function() {
 		float_window.content("没有上一页了")
 		float_window.open()
 	} else {
-		if (SORT == "tid") {
-			window.location.href = `/forum/${FID}/${PAGE - 1}`
-		} else {
-			window.location.href = `/forums/${FID}/${PAGE - 1}/${SORT}`
-		}
-		
+		window.location.href = `/forum/${FID}/${PAGE - 1}`
 	}
 })
 
@@ -206,11 +234,7 @@ last_page_button.addEventListener('click', function() {
 // 
 var next_page_button = document.querySelector('.page .next_page')
 next_page_button.addEventListener('click', function() {
-	if (SORT == "tid") {
-		window.location.href = `/forum/${FID}/${PAGE + 1}`
-	} else {
-		window.location.href = `/forums/${FID}/${PAGE + 1}/${SORT}`
-	}
+	window.location.href = `/forum/${FID}/${PAGE + 1}`
 })
 
 
@@ -228,12 +252,7 @@ const goto_page = () => {
 		float_window.content("请输入要跳转的页数！")
 		float_window.open()
 	} else {
-		if (SORT == "tid") {
-			window.location.href = `/forum/${FID}/${page}`
-		} else {
-			window.location.href = `/forums/${FID}/${page}/${SORT}`
-		}
-
+		window.location.href = `/forum/${FID}/${page}`
 	}
 }
 
@@ -261,23 +280,17 @@ const previews_add = (tid, aids, chunk) => {
 
 
 // 
-// 排序选择
+// 排序方法
 // 
 const sort_DOM = document.getElementById('sort');
 
 // 添加 change 事件监听器
 sort_DOM.addEventListener('change', function(e) {
+
 	// 获取当前选择的选项的值
 	const sort = e.target.value;
-
-	if (sort == "normal") {
-		window.location.href = `/forum/${FID}/${PAGE}`
-	}
-
-	if (sort == "score") {
-		window.location.href = `/forums/${FID}/${PAGE}/score`
-	}
-
+	set_cookie("SORT1-1", sort)
+	location.reload()
 })
 
 
@@ -285,30 +298,9 @@ sort_DOM.addEventListener('change', function(e) {
 // 
 // 排除拔作
 // 
-const no_push_DOM = document.getElementById("no_push");
-
-no_push_DOM.addEventListener("change", function() {
-
-	// 请求锁，防止过量请求
-	if (small_lock()) {
-		return
-	}
-
-	if (no_push_DOM.checked) {
-		var no_push_state = true
-	} else {
-		var no_push_state = false
-	}
-
-	var data = {
-		"cmd": "no_push",
-		"state": no_push_state
-	};
-
-	// 调用 xhr 请求
-	xhr("/servers/user_config.php", data).then((result) => {
-		location.reload();
-	})
+DOM_no_H.addEventListener("change", function() {
+	set_cookie("no_H", Number(DOM_no_H.checked))
+	location.reload()
 })
 
 
@@ -316,29 +308,30 @@ no_push_DOM.addEventListener("change", function() {
 // 
 // 只有拔作
 // 
-const only_H_DOM = document.getElementById("only_H");
-
-
-only_H_DOM.addEventListener("change", function() {
-
-	// 请求锁，防止过量请求
-	if (small_lock()) {
-		return
-	}
-
-	if (only_H_DOM.checked) {
-		var only_H_state = true
-	} else {
-		var only_H_state = false
-	}
-
-	var data = {
-		"cmd": "only_H",
-		"state": only_H_state
-	};
-
-	// 调用 xhr 请求
-	xhr("/servers/user_config.php", data).then((result) => {
-		location.reload();
-	})
+DOM_only_H.addEventListener("change", function() {
+	set_cookie("only_H", Number(DOM_only_H.checked))
+	location.reload()
 })
+
+
+
+// 
+// 竖向封面支持
+// 
+function detectPortraitCovers() {
+    document.querySelectorAll('.forum_card .cover img').forEach(img => {
+        const check = () => {
+            if (img.naturalHeight > img.naturalWidth) {
+                img.closest('.cover').classList.add('portrait');
+            }
+        };
+        // 图片已缓存则直接判断，否则等待加载完成
+        if (img.complete && img.naturalWidth > 0) {
+            check();
+        } else {
+            img.addEventListener('load', check);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', detectPortraitCovers);

@@ -22,15 +22,15 @@
 
 
 	<div class="board main_board dynamic_height">
-		<img src="/data/imgs/title_arc.png" class="title_arc" alt="版块装束图片">
+		<img data-src="/title_arc.png" class="title_arc" alt="版块装束图片">
 		<div class="board_2nd">
 			<header>
-				<img src="/data/imgs/title_start.png" class="title_start" alt="版块装束图片">
+				<img data-src="/title_start.png" class="title_start" alt="版块装束图片">
 				<ul class="title_content"></ul>
-				<img src="/data/imgs/title_end.png" class="title_end" alt="版块装束图片">
+				<img data-src="/title_end.png" class="title_end" alt="版块装束图片">
 				<div class="buttons_">
 					<label class="checkbox" title="打开后将不再推送拔作">
-						<input type="checkbox" id="no_push">
+						<input type="checkbox" id="no_H">
 						<span class="checkmark"></span>
 						<span>不看拔作</span>
 					</label>
@@ -42,7 +42,8 @@
 					</label>
 
 					<select id="sort" style="width: 14cqw">
-						<option value='tid'>默认排序</option>
+						<option value='tid'>按发布时间排序</option>
+						<option value='last_modify'>按更新时间排序</option>
 						<option value='score'>按评分排序</option>
 					</select>
 				</div>

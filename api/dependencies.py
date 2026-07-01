@@ -1,12 +1,13 @@
 from fastapi import Depends, HTTPException, Header, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import asyncmy
+import time
 
 rds = None
 pool = None
 CONFIG = None
 security = HTTPBearer(auto_error=False)
-
+last_request = int(time.time())
 
 
 async def get_redis():
@@ -21,6 +22,8 @@ async def get_db():
 
 async def get_config():
     return CONFIG
+
+
 
 
 

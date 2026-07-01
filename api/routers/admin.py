@@ -1,12 +1,14 @@
-from fastapi import HTTPException, Request, Depends, APIRouter, Path, Query
-from dependencies import get_db, get_redis
+from fastapi import HTTPException, Request, Depends, APIRouter, Path, Query, File, UploadFile
+from dependencies import *
 from functions import *
 from typing import Optional
 from pydantic import BaseModel, Field
 import asyncmy
-from models import admin, remove_reply
+from models import *
 import shutil
 from pathlib import Path as PATH
+import subprocess
+import zipfile
 
 router = APIRouter(prefix="/admin", tags=["管理员"])
 
@@ -23,6 +25,7 @@ async def API_auth(uid: int = Depends(get_uid)):
         return success({"admin": False})
 
 
+
 @router.get("/auth/{uid}", summary="验证管理员身份", description="根据指定uid判断是否为管理员")
 async def API_auth_uid(uid: int):
     administrators = [1, 73]
@@ -33,6 +36,7 @@ async def API_auth_uid(uid: int):
     else:
         return success({"admin": False})
     
+
 
 @router.post("/new_day", summary="执行服务器定时任务", description="更新每日更新，清空今日在线人数统计，爬取月慕最新资讯，爬取各大论坛数据等功能。")
 async def API_new_day(model: admin, pool = Depends(get_db), config = Depends(get_config)):
@@ -63,36 +67,24 @@ async def API_new_day(model: admin, pool = Depends(get_db), config = Depends(get
     date = await get_date()
     await db_update(pool, "UPDATE sys_auto_increment_value SET value=%s WHERE variable='today' LIMIT 1", (date, ))
 
-
     # 更新月慕咨询
     await update_ym(pool)
 
+    # 爬取最新的touchgal帖子
+    await touchgal_get()
 
-	# 	// 
-	# 	ym_get();
+    # 月份更新
+    day = int(await get_date("day"))
+    if day == 1:
 
-	# 	// 更新touchgal
-	# 	touchgal_get();
+        # 所有非热门tag浏览量清零
+        await db_update(pool, "UPDATE tags_index SET count = 0 WHERE tag NOT IN (SELECT tag FROM (SELECT tag FROM tags_index ORDER BY count DESC LIMIT 30) AS top30)")
 
+        # 热门tag浏览量设置为1，目的是让系统有正确的sql索引
+        await db_update(pool, "UPDATE tags_index SET count = 1 WHERE tag IN (SELECT tag FROM (SELECT tag FROM tags_index ORDER BY count DESC LIMIT 30) AS top30)")
 
-
-
-
-
-	# 	// 月份更新，自动重置热门tag
-	# 	if (get_time("m") != explode("-", $server_today)[1]) {
-			
-	# 		// 所有非热门tag浏览量清零
-	# 		mysqli_query($link, "UPDATE tags_index SET count = 0 WHERE tag NOT IN (SELECT tag FROM (SELECT tag FROM tags_index ORDER BY count DESC LIMIT 30) AS top30); ");
-
-	# 		// 热门tag浏览量设置为1，目的是让系统有正确的sql索引
-	# 		mysqli_query($link, "UPDATE tags_index SET count = 1 WHERE tag IN (SELECT tag FROM (SELECT tag FROM tags_index ORDER BY count DESC LIMIT 30) AS top30); ");
-	# 	}
-	# }
-
-
-
-
+    # 备份数据库
+    await mysql_backup(pool, config)
     return success("执行完成")
 
 
@@ -101,6 +93,60 @@ async def API_new_day(model: admin, pool = Depends(get_db), config = Depends(get
 async def API_clear_redis(rds = Depends(get_redis)):
     await rds.flushdb()
     return success("清理完成")
+
+
+
+@router.post("/logo", summary="上传logo图片", description="高度控制在160px以内。")
+async def API_POST_topic_imgs(
+    file: UploadFile = File(..., description="图片文件"),
+    config = Depends(get_config)
+):
+    
+    # 移入文件
+    path = PATH(config['path'])
+    with open(path / f"data/forums/3/data3/imgs/Developer/{file.filename}", "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    return success("上传成功")
+
+
+
+
+@router.put("/touchgal", summary="替换3-1板块中touchgal网站的URL", description="str为需要替换的旧网址，需要完全填写，如https://www.touchgal.us")
+async def API_POST_topic_imgs(
+    str = Query(..., description="需要替换的字符串"),
+    pool = Depends(get_db),
+    config = Depends(get_config)
+):
+    new = config['touchgal']
+    for i in range(10):
+        await db_update(
+            pool,
+            "UPDATE `{}` SET content = REPLACE(content, %s, %s) WHERE content LIKE %s".format(f"topics_3-1_{i}"),
+            (str, new, f"%{str}%")
+        )
+
+    return success("替换完成")
+
+
+
+@router.post("/backup", summary="备份数据库")
+async def backup_database(
+    pool = Depends(get_db),
+    config = Depends(get_config),
+    uid = Depends(get_uid_by_headers)
+):
+    if uid not in config["administrators"]:
+        return fail("您没权限调用该接口！")
+
+    result = await mysql_backup(pool, config)
+    return success(result)
+
+
+
+
+
+
 
 
 

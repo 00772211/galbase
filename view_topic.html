@@ -18,10 +18,10 @@
 	<br>
 
 	<div class="board main_board" style="width:97.5%">
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header class="function">
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>T</li>
 					<li>I</li>
@@ -29,7 +29,7 @@
 					<li>L</li>
 					<li>E</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 				<span class="title"></span>
 			</header>
 		</div>
@@ -49,27 +49,27 @@
 				<div class="buttons_">
 					<div class="select_warp">
 						<div class="select_main" onclick="toggleSelect()">
-							<span><img src="/data/imgs/function.png" alt="帖子操作" loading="lazy">帖子操作</span>
+							<span><img data-src="/function.png" alt="帖子操作" loading="lazy">帖子操作</span>
 						</div>
 						
 						<div class="options" id="options">
 							<div class="option" onclick="view_topic_format()">
-								<img src="/data/imgs/structure.png" alt="查看本贴结构" loading="lazy">
+								<img data-src="/structure.png" alt="查看本贴结构" loading="lazy">
 								<span>查看本贴结构</span>
 							</div>
 
 							<div class="option" onclick="replace_topic()">
-								<img src="/data/imgs/note.png" alt="修改帖子" loading="lazy">
+								<img data-src="/note.png" alt="修改帖子" loading="lazy">
 								<span>修改帖子</span>
 							</div>
 
 							<div class="option" onclick="judment()">
-								<img src="/data/imgs/judment.png" alt="风纪执行" loading="lazy">
+								<img data-src="/judment.png" alt="风纪执行" loading="lazy">
 								<span>风纪执行</span>
 							</div>
 
 							<div class="option" id="collection_button" onclick="collection()">
-								<img src="/data/imgs/collection.png" alt="收藏" loading="lazy">
+								<img data-src="/collection.png" alt="收藏" loading="lazy">
 								<span>收藏状态请求中…</span>
 							</div>
 						</div>
@@ -81,15 +81,15 @@
 	</div>
 
 	<div class="board wide_board" id="rate" hidden>
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header class="function">
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>评</li>
 					<li>分</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 			</header>
 			<main>
 				<div class="chart-container" id="slider">
@@ -99,7 +99,7 @@
 				<div class="part" id="user_rate">
 					<div class="card">
 						<div class="auther">
-							<img src="/data/imgs/title_start.png" class="avatar" alt="图片加载失败">
+							<img data-src="/title_start.png" class="avatar" alt="图片加载失败">
 							<span class="uname">历史简评</span>
 						</div>
 					</div>
@@ -140,10 +140,10 @@
 	</div>
 
 	<div class="board wide_board" id="developer_works" hidden>
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header class="function">
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>该</li>
 					<li>会</li>
@@ -153,26 +153,26 @@
 					<li>作</li>
 					<li>品</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 			</header>
 			<main></main>
 		</div>
 	</div>
 
 	<div class="board wide_board" id="reply">
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header class="function">
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>回</li>
 					<li>复</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 			</header>
 			<main>
-				<img src="/data/imgs/file.png" onclick="alert('附件上传未实装')" loading="lazy" alt="附件上传" title="附件上传">
-				<img src="/data/imgs/emoji.png" onclick="alert('表情未实装')" loading="lazy" alt="表情" title="表情">
+				<img data-src="/file.png" onclick="alert('附件上传未实装')" loading="lazy" alt="附件上传" title="附件上传">
+				<img data-src="/emoji.png" onclick="alert('表情未实装')" loading="lazy" alt="表情" title="表情">
 				<textarea class="reply_content" placeholder="请输入你想回复的内容！请不要使用英文双引号！"></textarea>
 				<button onclick="reply()">参与回复</button>
 			</main>
@@ -180,17 +180,17 @@
 	</div>
 
 	<div class="board wide_board" id="reply_region" hidden>
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header class="function">
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>历</li>
 					<li>史</li>
 					<li>回</li>
 					<li>复</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 			</header>
 			<main></main>
 		</div>

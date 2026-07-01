@@ -23,7 +23,8 @@ async def API_anime_ep_get(
     ep: int = Path(..., description="集数"),
     config = Depends(get_config),
     sessionID = Depends(get_sessionID),
-    finger = Depends(get_finger)
+    finger = Depends(get_finger),
+    rds = Depends(get_redis)
 ):
     text = f"{tid}|{ep}"
     md5 = hashlib.md5(text.encode("utf-8")).hexdigest()
@@ -32,12 +33,5 @@ async def API_anime_ep_get(
     sharding = await chunk(config, tid, "anime")
     url = f"{sharding}/{tid}/{ep}_{md5}.mp4"
 
-    # 日志记录
-    date = await get_date("all")
-    if not sessionID:
-        await log_add_source(f"{date} {finger}观看{tid}第{ep}集")
-    else:
-        uid = await get_uid_by_sessionID(sessionID, rds, pool)
-        await log_add_source(f"{date} {uid}观看{tid}第{ep}集")
-
+    await log_add(pool, rds, f"观看{tid}第{ep}集", sessionID, finger)
     return success(url)

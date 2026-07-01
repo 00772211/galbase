@@ -114,23 +114,23 @@
 	<script src="/js/navigation_bar.js"></script>
 
 	<div class="board main_board else">
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header>
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>心</li>
 					<li>路</li>
 					<li>历</li>
 					<li>程</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 			</header>
 			<main>
-				<img class="avatar_big" src="" onclick="fullscreen_avatar(this)" loading="lazy" alt="头像加载失败"><br><br>
+				<img class="avatar_big" onclick="fullscreen_avatar(this)" loading="lazy" alt="用户大头像" hidden><br><br>
 
 				展示的个性签名：<input type="text" id="sign" placeholder="Love Forever" value=""><br><br>
-				此生挚爱的图片：<input type="text" id="sign_img" placeholder="格式：tid|aid，例如:1|1" value=""><br><br>
+				此生挚爱的图片：<input type="text" id="sign_img" placeholder="URL，格式：https://xxx.com/1.png" value=""><br><br>
 				此生挚爱的故事：<input type="text" id="best_love_story" placeholder="友情是宽容，友情是仁慈" value=""><br><br>
 				正在推进的故事：<input type="text" id="playing_story" placeholder="友情是不张扬，不自夸。" value=""><br><br>
 				强烈推荐的故事：<input type="text" id="recommend_stories" placeholder="格式：A|B|C|D|E" value=""><br><br>
@@ -145,18 +145,91 @@
 	<h4 style="visibility: hidden;">x</h4>
 
 	<div class="board main_board">
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header>
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>设</li>
 					<li>置</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 			</header>
 			<main>
-				待开发中…未来见…
+				<table border="1" cellpadding="5px" cellspacing="0px" width="100%">
+					<tbody>
+						<tr>
+							<td>
+								<label class="checkbox" title="去掉下江小春">
+									<input type="checkbox" id="remove_koharu">
+									<span class="checkmark"></span>
+									<span>去掉下江小春（仅tid5600后的帖子生效）</span>
+								</label>
+							</td>
+							<td>
+								<label class="checkbox" title="去掉下江小春">
+									<input type="checkbox" id="no_log_online">
+									<span class="checkmark"></span>
+									<span>不记录在校时间（已记录时间不会清空）</span>
+								</label>
+							</td>
+							<td>
+								<label class="checkbox" title="取消图片防剧透（H CG不再模糊）">
+									<input type="checkbox" id="no_imgs_defense">
+									<span class="checkmark"></span>
+									<span>取消图片防剧透（H CG不再模糊）</span>
+								</label>
+							</td>
+							<td>---</td>
+						</tr>
+					</tbody>
+				</table>
+			</main>
+		</div>
+	</div>
+
+	<h4 style="visibility: hidden;">x</h4>
+
+	<div class="board main_board">
+		<img data-src="/title_arc.png" class="title_arc">
+		<div class="board_2nd">
+			<header>
+				<img data-src="/title_start.png" class="title_start">
+				<ul class="title_content">
+					<li>升</li>
+					<li>学</li>
+				</ul>
+				<img data-src="/title_end.png" class="title_end">
+			</header>
+			<main>
+				<table border="1" cellpadding="5px" cellspacing="0px" width="100%">
+					<tbody>
+						<tr>
+							<td>您当前身份：<span id="identity"></span></td>
+							<td>您当前学年：<span id="academic_year"></span></td>
+							<td>您的权限等级：<span id="level"></span></td>
+							<td><button onclick="level_up()">升学</button></td>
+						</tr>
+						<tr>
+							<td>中学一年生（需要发帖数量>=10）</td>
+							<td>中学二年生（需要注册时间>=1年）</td>
+							<td>中学三年生（需要注册时间>=2年）</td>
+							<td>高校一年生（需要注册时间>=3年）</td>
+						</tr>
+						<tr>
+							<td>高校二年生（需要注册时间>=4）</td>
+							<td>高校三年生（需要注册时间>=5年）</td>
+							<td>大学一年生（需要注册时间>=6年）</td>
+							<td>大学二年生（需要注册时间>=7年）</td>
+						</tr>
+						<tr>
+							<td>大学三年生（需要注册时间>=8）</td>
+							<td>大学四年生（需要注册时间>=9年）</td>
+							<td>离校毕业生（需要注册时间>=10年）</td>
+							<td>学年只有注册时间长短的区别！</td>
+						</tr>
+					</tbody>
+				</table>
 			</main>
 		</div>
 	</div>
@@ -164,17 +237,17 @@
 	<h4 style="visibility: hidden;">x</h4>
 
 	<div class="board main_board dynamic_height_flex">
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header>
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>账</li>
 					<li>号</li>
 					<li>绑</li>
 					<li>定</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 			</header>
 			<main style="padding: 10px;">
 				绑定的邮箱：<input type="text" id="email" placeholder="Just Living Database" value="">
@@ -186,6 +259,7 @@
 	</div>
 
 
+<script src="/js/md5.js"></script>
 <script src="/js/img_zip.js"></script>
 <script src="/js/user_admin.js"></script>
 <script src="/js/footer.js"></script>

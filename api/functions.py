@@ -1,7 +1,8 @@
 
 import asyncmy
 from fastapi import HTTPException, Request, Depends
-from dependencies import get_db, get_redis, get_config
+from dependencies import *
+import dependencies
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from pathlib import Path as PATH
@@ -15,6 +16,11 @@ import requests
 from urllib.parse import urljoin
 import shutil
 import os
+import time
+import anyio
+import subprocess
+import zipfile
+
 
 def success(data: dict):
     return {"error": "", "data": data}
@@ -93,6 +99,25 @@ async def db_auto_increment_value(pool, fetch: str):
             new_id = (await cur.fetchone())[0]
             await conn.commit()
             return new_id
+
+
+
+# 
+# 空闲处理
+# 
+async def idle_checker():
+    config = await get_config()
+    if config['localhost'] == True:
+        return
+
+    while True:
+        await anyio.sleep(60)
+        now = int(time.time())
+        if now - dependencies.last_request > 120:  # 3分钟
+            await get_touchgal_topic()
+
+            # 防止重复触发
+            dependencies.last_request = int(time.time())
 
 
 
@@ -307,7 +332,7 @@ async def get_fid(pool, tid: int, update: bool = False) -> str:
     if update == False:
         row = await db_fetchone(pool, "SELECT fid FROM topics_index WHERE tid=%s LIMIT 1", (tid, ))
         if not row:
-            return fail("tid未找到")
+            return None
 
         # 缓存进redsi
         await rds.set(f"fid:{tid}{update}", row['fid'], ex=1800)
@@ -318,7 +343,7 @@ async def get_fid(pool, tid: int, update: bool = False) -> str:
     else:
         row = await db_fetchone(pool, "SELECT fid, last_modify FROM topics_index WHERE tid=%s LIMIT 1", (tid, ))
         if not row:
-            return fail("tid未找到")
+            return None
         return row['fid'], row['last_modify']
 
 
@@ -399,10 +424,7 @@ async def tags_to_str(pool, tags: list):
     sql = f"SELECT id, tag FROM tags_index WHERE id IN ({placeholders})"
 
     # 获取出 tagID 对应的 tag
-    async with pool.acquire() as conn:
-        async with conn.cursor(asyncmy.cursors.DictCursor) as cur:
-            await cur.execute(sql, tuple(tags))
-            rows = await cur.fetchall()
+    rows = await db_rows(pool, sql, tuple(tags))
 
     # JSON格式输出
     data = {}
@@ -414,8 +436,8 @@ async def tags_to_str(pool, tags: list):
 
 async def tags_to_ID(
     pool,
-    tags_str: list, 
-    auto_create: bool = False, 
+    tags_str: list,
+    auto_create: bool = False,
     uid: int = None
 ):
     """
@@ -423,9 +445,13 @@ async def tags_to_ID(
 
     :pool: 数据库连接池
     :tags_str: tags字符串列表
-    :auto_create: 是否自动创建，如果填参这个需要填入uid参数，用于指定创建者
+    :auto_create: 是否自动创建
     :uid: 创建者uid
     """
+
+    if not tags_str:
+        return {}
+
     placeholders = ",".join(["%s"] * len(tags_str))
     sql = f"SELECT id, tag FROM tags_index WHERE tag IN ({placeholders})"
 
@@ -434,34 +460,35 @@ async def tags_to_ID(
             await cur.execute(sql, tuple(tags_str))
             rows = await cur.fetchall()
 
-    # "夏日": "31"
-    tags = {
+    # 先做数据库结果映射
+    db_tags = {
         row["tag"]: row["id"]
         for row in rows
     }
-    
-    # 自动创建新TAG索引表
-    if auto_create == True:
 
-        # 找出不存在的tag
+    # 自动创建不存在tag
+    if auto_create:
+
         new_tags = [
             tag for tag in tags_str
-            if tag not in tags
+            if tag not in db_tags
         ]
 
-        # 插入新tag
         for tag in new_tags:
             tag_id = await db_insert(
                 pool,
                 "INSERT INTO tags_index (tag, count) VALUES (%s, 0)",
                 (tag,)
             )
-            tags[tag] = tag_id
+            db_tags[tag] = tag_id
 
-        # 按原顺序返回ID列表
-        return tags
+    # 按原输入顺序重新构建
+    tags = {
+        tag: db_tags[tag]
+        for tag in tags_str
+        if tag in db_tags
+    }
 
-    # 返回
     return tags
 
 
@@ -472,7 +499,8 @@ async def get_user(
     uid: int,
     uname: bool = True,
     fetch: str = "*",
-    avatar: bool = False
+    avatar: bool = False,
+    level: bool = False
 ) -> dict:
     """
     获取用户所有信息
@@ -482,6 +510,7 @@ async def get_user(
     :uname: 是否获取用户名
     :fetch: 从users_data_{}表取片段
     :avatar: 是否获取头像
+    :level: 是否获取等级，如果是True则传参的fetch需要包含有academic_year字段
     """
     config = await get_config()
 
@@ -520,6 +549,9 @@ async def get_user(
             data['avatar_medium'] =  f"{domain}/random/{num}.avif"
             data['avatar_small'] =  f"{domain}/random/{num}.avif"
 
+    # 获取等级
+    if level == True:
+        data['level'] = config['level'][data['academic_year']]
     return data
 
 
@@ -772,7 +804,7 @@ async def get_title(pool, tid: int, fid: str = None) -> str:
 
 
 
-async def timestamp():
+async def timestamp(rel: bool = False):
     """
     获取上海当天 0:00 的秒级时间戳
     """
@@ -781,14 +813,34 @@ async def timestamp():
 
     now = datetime.now(shanghai_tz)
 
-    today_start = now.replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0
-    )
+    # 当天0:00的时间戳
+    if rel == False:
+        today_start = now.replace(
+            hour=0,
+            minute=0,
+            second=0,
+            microsecond=0
+        )
 
-    return int(today_start.timestamp())
+        return int(today_start.timestamp())
+    
+    # 真实秒级时间戳
+    else:
+        return int(now.timestamp())
+
+
+
+async def str_to_timestamp(str):
+    # 自动判断格式
+    if " " in str:
+        fmt = "%Y-%m-%d %H:%M:%S"
+    else:
+        fmt = "%Y-%m-%d"
+
+    dt = datetime.strptime(str, fmt)
+    dt_shanghai = dt.replace(tzinfo=ZoneInfo("Asia/Shanghai"))
+    return int(dt_shanghai.timestamp())
+
 
 
 async def md5(text: str):
@@ -1029,3 +1081,381 @@ async def update_ym(pool):
         data_
     )
     return
+
+
+
+async def get_user_config(
+    pool,
+    uid: int,
+    fetch: str = "*"
+):
+    """
+    获取用户的配置
+
+    :pool: 数据库连接池
+    :uid: 用户ID
+    :fetch: 从users_configs_{i}分表中取什么片段，默认*
+    """
+    table = f"users_configs_{str(uid)[-1]}"
+    row = await db_fetchone(
+        pool, 
+        "SELECT {} FROM {} WHERE uid=%s LIMIT 1".format(fetch, table),
+        (uid, )
+    )
+
+    return row
+
+
+
+async def get_level(
+    pool,
+    uid: int,
+):
+    """
+    获取论坛等级
+
+    :pool: 数据库连接池
+    :uid: 用户ID
+    """
+    config = await get_config()
+    table = f"users_data_{str(uid)[-1]}"
+    row = await db_fetchone(
+        pool,
+        "SELECT academic_year FROM {} WHERE uid=%s LIMIT 1".format(table),
+        (uid, )
+    )
+    academic_year = row['academic_year']
+    level = config['level'][academic_year]
+    return level
+
+
+
+
+
+async def touchgal_get():
+    """
+    爬取touchgal的最新帖子
+    """
+    pool = dependencies.pool
+    config = await get_config()
+    url = config['touchgal']
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Cookie": config['touchgal_cookie'],
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        
+
+        html = response.text
+        soup = BeautifulSoup(html, "html.parser")
+
+        # 找到标题
+        title = soup.find(
+            lambda tag:
+            tag.name == "h2" and
+            "最新 Galgame" in tag.get_text(strip=True)
+        )
+
+        if not title:
+            raise Exception("未找到『最新 Galgame』模块")
+
+        # 找到所属 section
+        section = title.find_parent("section")
+
+        if not section:
+            raise Exception("未找到 section")
+
+        # 找到该 section 下的第一个 grid
+        grid = section.find(
+            lambda tag:
+            tag.name == "div" and
+            tag.get("class") and
+            any("grid-cols-2" in c for c in tag.get("class"))
+        )
+
+        if not grid:
+            raise Exception("未找到帖子列表")
+
+        # 提取帖子ID
+        post_ids = []
+
+        for a in grid.find_all("a", href=True, recursive=False):
+            href = a["href"]
+
+            if href.startswith("/"):
+                post_ids.append(href.strip("/"))
+
+        # 查已有
+        rows = await db_rows(
+            pool,
+            f"""
+            SELECT id
+            FROM touchgal
+            WHERE id IN ({','.join(['%s'] * len(post_ids))})
+            """,
+            post_ids
+        )
+
+        exists = {row["id"] for row in rows}
+
+        # 过滤
+        insert_data = [
+            (id_,)
+            for id_ in post_ids
+            if id_ not in exists
+        ]
+
+        # 批量插入
+        if insert_data:
+            await db_insert_many(
+                pool,
+                "INSERT INTO touchgal (id)",
+                insert_data
+            )
+
+    except requests.exceptions.RequestException as e:
+        await msg_add(pool, 73, "touchgal爬取异常：{e}")
+    return
+
+
+
+
+async def get_touchgal_topic():
+    """
+    爬取touchgal的最新帖子
+    """
+    pool = dependencies.pool
+    config = await get_config()
+
+    # 取一个touchgal的帖子ID
+    row = await db_fetchone(pool, "SELECT id FROM touchgal WHERE status=0 LIMIT 1")
+    if not row:
+        return
+    
+    ID = row['id']
+    url = config['touchgal'] + f"/{ID}"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Cookie": config['touchgal_cookie'],
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+
+        html = response.text
+        print(1)
+        if "未找到对应 Galgame" in html:
+            print(2)
+            await db_update(
+                pool,
+                f"UPDATE touchgal SET status=1  WHERE id='{ID}' LIMIT 1"
+            )
+            return
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        # 获取帖子标题
+        title = soup.title.text
+        title = title.split("|")
+        title.pop()
+        title = '|'.join(title)
+
+        # 获取游戏别名
+        try:
+            h2 = soup.find("h2", string="游戏别名")
+            ul = h2.find_next_sibling("ul")
+            aliases = [
+                li.get_text(strip=True)
+                for li in ul.find_all("li")
+            ]
+            aliases_str = " / ".join(aliases)
+            aliases = "{?pre" + aliases_str + "?}"
+        except:
+            aliases = ""
+
+        # 获取开发商
+        try:
+            h2 = soup.find("h2", string="所属会社")
+            container = h2.find_parent().find_next_sibling()
+            span = container.find("span")
+            developer = span.get_text(strip=True)
+            developer = developer.split("+")[0]
+            developer = "{?pre开发：" + developer + "?}"
+        except:
+            developer = ""
+
+        # 获取游戏介绍
+        try:
+            h2 = soup.find("h2", string="游戏介绍")
+            paragraphs = []
+            node = h2.find_next_sibling()
+            while node and node.name != "h2":
+                if node.name == "p":
+                    html = node.decode_contents().replace("<br/>", "<br>")
+                    if not html.endswith("<br>"):
+                        html += "<br>"
+                    paragraphs.append(html)
+                node = node.find_next_sibling()
+            overview = "<br>".join(paragraphs)
+        except:
+            overview = "无介绍"
+
+        # 获取发售日期
+        try:
+            for span in soup.find_all("span"):
+                text = span.get_text(strip=True)
+                if "发售时间" in text:
+                    date = text.replace("发售时间:", "").strip()
+                    break
+        except:
+            date = await get_date()
+
+        # 获取OP
+        try:
+            h2 = soup.find("h2", string="PV鉴赏")
+            video_div = h2.find_next_sibling("div")
+            video_url = video_div.get("data-src", "")
+            OP = "{_video" + video_url + "}"
+        except:
+            OP = ""
+
+        # 获取图片
+        try:
+            h2 = soup.find("h2", string="游戏截图")
+            img_container = h2.find_next_sibling("div")
+            imgs = [
+                img.get("src")
+                for img in img_container.find_all("img")
+                if img.get("src")
+            ]
+            imgs_src = ""
+            for img in imgs:
+                imgs_src += "{_img" + img + "}"
+        except:
+            imgs_src = ""
+
+        # 下载链接
+        download = "{?pre下载链接：" + f"<a href='{url}' target='_blank'>{url}</a>" + "?}"
+
+        # 完整入库结构
+        content = f"{aliases}{developer}{overview}{OP}{imgs_src}{download}"
+
+        # 入库
+        tid = await db_auto_increment_value(pool, "tid")
+        table = f"topics_3-1_" + str(tid)[-1]
+        await db_insert(
+            pool,
+            "INSERT INTO `{}` (`tid`, `title`, `content`, `uid`, `date`, `tags`, `preview`, `view_count`, `reply_count`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)".format(table),
+            (tid, title, content, 73, date, "12", "", 0, 0)
+        )
+
+        ts = int(datetime.strptime(date, "%Y-%m-%d").timestamp())
+        await db_insert(
+            pool,
+            "INSERT INTO `topics_index` (`fid`, `tid`, `last_modify`, `score`) VALUES (%s, %s, %s, %s)",
+            ("3-1", tid, ts, "")
+        )
+
+        # 更新touchgal爬取状态
+        await db_update(
+            pool,
+            f"UPDATE touchgal SET status=1  WHERE id='{ID}' LIMIT 1"
+        )
+    except requests.exceptions.RequestException as e:
+        await msg_add(pool, 73, "touchgal爬取帖子异常：{e}")
+    return
+
+
+
+async def mysql_backup(pool, config):
+    """
+    备份数据库
+    """
+    BACKUP_DIR = PATH(config["path"]) / "mysql_backup"
+
+    # 创建目录
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 获取数据库信息
+    host = pool._conn_kwargs["host"]
+    port = pool._conn_kwargs["port"]
+    user = pool._conn_kwargs["user"]
+    password = pool._conn_kwargs["password"]
+    db_name = pool._conn_kwargs["db"]
+
+    # 获取全部表
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute("SHOW TABLES")
+            tables = [row[0] for row in await cur.fetchall()]
+
+    # 开始导出
+    for table in tables:
+
+        sql_file = BACKUP_DIR / f"{table}.sql"
+
+        cmd = [
+            config["mysqldump"],
+            "-h", host,
+            "-P", str(port),
+            "-u", user,
+            f"-p{password}",
+        ]
+
+        # sessions、logs 仅结构
+        if table in config['black_list_tables']:
+            cmd.append("--no-data")
+
+        cmd.extend([
+            db_name,
+            table
+        ])
+
+        with open(sql_file, "wb") as f:
+            subprocess.run(
+                cmd,
+                stdout=f,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+
+    # 压缩成zip
+    zip_path = PATH(config["path"]) / "data/forums/3/data3/mysql/mysql_backup.zip"
+    if zip_path.exists():
+        zip_path.unlink()
+
+    with zipfile.ZipFile(
+        zip_path,
+        "w",
+        compression=zipfile.ZIP_DEFLATED
+    ) as z:
+
+        for sql_file in BACKUP_DIR.glob("*.sql"):
+            z.write(
+                sql_file,
+                arcname=sql_file.name
+            )
+
+    # 删除整个备份目录
+    shutil.rmtree(BACKUP_DIR, ignore_errors=True)
+
+    return {
+        "msg": "备份完成",
+        "path": str(BACKUP_DIR),
+        "tables": len(tables),
+        "zip": str(zip_path),
+    }

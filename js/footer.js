@@ -1,18 +1,52 @@
+// 
+// 加载所有图片
+// 
+document.addEventListener("DOMContentLoaded", function() {
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target
+                img.src = SRC + img.dataset.src
+                observer.unobserve(img)
+            }
+        });
+    });
+
+    document.querySelectorAll("img[data-src]").forEach(img => {
+        observer.observe(img)
+    })
+})
+
+
+
+
+
 HTML = `
     <div id="imp"></div>
 
+    <div class="danmaku-wrap" id="dw"></div>
+
     <div class="show_bg" onclick="show_bg()">
-        <img src="/data/imgs/title_start.png" class="bt" title="观看背景 / 回到论坛" alt="图片加载失败">
-        <img src="/data/imgs/title_arc.png" class="title_arc">
+        <img src="${SRC}/title_start.png" class="bt" title="观看背景 / 回到论坛" alt="图片加载失败" loading="lazy">
+        <img src="${SRC}/title_arc.png" class="title_arc" loading="lazy">
     </div>
+
+    <div id="phone" style="display: none;">
+		<img src="${SRC}/phone.avif" class="shell" alt="手机" loading="lazy">
+		<img src="${SRC}/phone_bg.png" class="bg" alt="手机壁纸" loading="lazy">
+		<div class="inner"> 
+			<ul></ul>
+		</div>
+    </div>
+	<img src="${SRC}/phone_open.png" id="phone_open" onclick="GUI_phone()" alt="打开手机" title="打开手机" loading="lazy">
 `
 document.body.insertAdjacentHTML('beforeend', HTML)
 
 HTML = `
 <footer>
 	<div class="t">
-		<img class="bg" src="/data/imgs/footer_bg.avif" alt="footer上侧背景">
-		<img class="dark" src="/data/imgs/footer.avif" alt="footer上册套图">
+		<img src="${SRC}/footer_bg.avif" class="bg" alt="footer上侧背景" loading="lazy">
+		<img src="${SRC}/footer.avif" class="dark" alt="footer上册套图" loading="lazy">
 		<div class="content">
 			<h1>欢迎访问 GALBase！</h1>
 			本站于2024年12月31日与FleeWorld论坛(2019-12-24 - 2024-12-24)合并！<br>
@@ -30,11 +64,16 @@ HTML = `
 	<div class="b">
 		<br><br><br>
 		<div class="links">
-			<img class="logo" src="/data/imgs/logo.png" alt="本站LOGO">
+			<img src="${SRC}/logo.png" class="logo" alt="本站LOGO" loading="lazy">
+
+ 			<ul>
+				<li><a href="/topic/1" target="_blank">本站源码</a></li>
+				<li><a href="https://api.galbase.top/docs#/" target="_blank">本站API</a></li>
+			</ul>
 
  			<ul>
 				<li>友情链接</li>
-				<li><a href="/topic/1" target="_blank">本站源码</a></li>
+                <li><a href="/topic/5585" target="_blank">申请友链</a></li>
 			</ul>
 
 			<ul>
@@ -58,13 +97,20 @@ HTML = `
 				<p><strong style="color: #bd1616">事务联系</strong>：<strong>admin@galbase.top</strong> 或者站内发帖！</p>
 				<p>免费提供二级域名：<strong>galbase.top</strong>&emsp;<strong>0d000721.cc</strong>&emsp;<strong>ciallo.ca</strong></p>
 			</div>
-			
+            
 		</div>
 		<br>
 	</div>
 </footer>
 `
 document.body.insertAdjacentHTML('beforeend', HTML)
+
+
+
+
+
+
+
 
 
 
@@ -139,24 +185,17 @@ function add_online_time() {
         )
     })
 }
-if (LOGIN == true && UID != 1) {
-    setTimeout(add_online_time, 5 * 60 * 1000);
+
+if (LOGIN == true) {
+    if (get_cookie("no_log_online") != 1) {
+        setTimeout(add_online_time, 5 * 60 * 1000)
+    }
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
 // 
-// 监听所有版块
+// 天文望远镜监听
 // 
 const board_telescope = document.querySelectorAll('.board');
 
@@ -185,10 +224,166 @@ board_telescope.forEach(target_board => {
 
 
 
+// 
+// 加载季节特效
+// 
+const load_effect = () => {
+    if (CONFIG['summer'] == true) {
+        load_script("/js/effect/summer.js");
+    }
+}
 
 
 
 
+// 
+// 弹幕配置
+// 
+const TRACK_COUNT  = 8;         // 轨道数
+const TRACK_START_Y = 100;       // 第一条轨道距顶部距离 (px)
+const TRACK_GAP    = 44;        // 轨道间距 (px)
+const SPEED_MIN    = 90;        // 最低速度 (px/s)
+const SPEED_MAX    = 160;       // 最高速度 (px/s)
+const STYLES = ['ghost','ink','petal','sakura','night','aurora','sand','dusk','frost','ember'];
+
+
+
+// 
+// 随机样式
+// 
+function randomStyle() {
+  return STYLES[Math.floor(Math.random() * STYLES.length)];
+}
+
+
+
+// 
+// 轨道状态
+// 
+const trackState = Array.from({ length: TRACK_COUNT }, () => ({
+  width: 0, speed: 0, enterTime: 0
+}));
+
+
+
+// 
+// 弹幕头像
+// 
+function avCls(style, isMine) {
+  if (isMine) return 'av-mine';
+  return 'av-' + (style ?? 'ghost');
+}
+
+
+
+// 
+// 量宽
+// 
+function measureWidth(user, text, style, isMine) {
+  const el = document.createElement('div');
+  el.className = 'danmaku-item ' + (isMine ? 'style-my-mine' : 'style-' + style);
+  Object.assign(el.style, {
+    visibility: 'hidden', position: 'fixed',
+    left: '-9999px', top: '-9999px', animation: 'none'
+  });
+  el.innerHTML = `<span class="avatar ${avCls(style, isMine)}">${user[0]}</span><span>${text}</span>`;
+  document.body.appendChild(el);
+  const w = el.offsetWidth;
+  el.remove();
+  return w;
+}
+
+
+
+// 
+// 防追尾检测
+// 
+function canUseTrack(trackIdx, newW, newV) {
+  const prev = trackState[trackIdx];
+  if (!prev.enterTime) return true;
+
+  const sw = window.innerWidth;
+  const dt = (Date.now() - prev.enterTime) / 1000;
+
+  const totalDur = (sw + prev.width) / prev.speed;
+  if (dt >= totalDur + 1) return true;
+
+  if (prev.speed * dt < prev.width) return false;
+
+  if (newV > prev.speed) {
+    const tCatch = (prev.speed * dt - prev.width) / (newV - prev.speed);
+    const tExit  = (sw + prev.width) / prev.speed - dt;
+    if (tCatch <= tExit) return false;
+  }
+
+  return true;
+}
+
+
+
+// 
+// 选轨
+// 
+function pickTrack(newW, newV) {
+  for (let i = 0; i < TRACK_COUNT; i++) {
+    if (canUseTrack(i, newW, newV)) return i;
+  }
+  return trackState.reduce(
+    (best, s, i) => (s.enterTime < trackState[best].enterTime ? i : best), 0
+  );
+}
+
+
+
+// 
+// 生成弹幕
+// 
+let paused = false;
+const timers = [];
+
+function send_danmuku(user, text, isMine = false) {
+    const style = isMine ? null : randomStyle();  // 随机抽样式
+    const wrap  = document.getElementById('dw');
+    const sw    = window.innerWidth;
+
+    const w     = measureWidth(user, text, style, isMine);
+    const speed = SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN);
+    const dur   = (sw + w) / speed;
+
+    const trackIdx = pickTrack(w, speed);
+    trackState[trackIdx] = { width: w, speed, enterTime: Date.now() };
+
+    const el = document.createElement('div');
+    el.className = 'danmaku-item ' + (isMine ? 'style-my-mine' : 'style-' + style);
+
+    const y = TRACK_START_Y + trackIdx * TRACK_GAP + (Math.random() * 6 - 3);
+    el.style.top = y + 'px';
+    el.style.animationDuration = dur + 's';
+    el.style.setProperty('--travel', (sw + w) + 'px');
+    if (paused) el.style.animationPlayState = 'paused';
+
+    el.innerHTML = `<span class="avatar ${avCls(style, isMine)}">${user[0]}</span><span>${text}</span>`;
+
+    wrap.appendChild(el);
+
+    const t = setTimeout(() => el.remove(), dur * 1000 + 300);
+    timers.push(t);
+}
+
+
+
+// 
+// 弹幕调度
+// 
+function scheduleBatch() {
+  COMMENTS.forEach((c, i) => {
+    const t = setTimeout(
+      () => send_danmuku(c.user, c.text),
+      i * 1200 + Math.random() * 500
+    )
+    timers.push(t)
+  })
+}
 
 
 
@@ -311,3 +506,57 @@ if (deviceType == "手机") {
 
 
 
+// 
+// 打开关闭手机
+// 
+function GUI_phone() {
+    const phone = document.getElementById('phone');
+	const phone_oepn = document.querySelector("#phone_open")
+    const isVisible = phone.classList.contains('is-visible');
+	
+
+	if (isVisible) {
+		phone_oepn.alt = "打开手机"
+		phone_oepn.title = "打开手机"
+		phone.classList.remove('is-visible');
+		phone.classList.remove('is-open');
+		phone.style.transform = '';   // ← 先清掉 JS 残留的 transform
+		phone.style.transition = '';  // ← 顺带清掉 transition
+		phone.classList.add('is-close');
+		phone.addEventListener('animationend', () => {
+			phone.style.display = 'none';
+			phone.classList.remove('is-close');
+		}, { once: true });
+	} else {
+		phone_oepn.alt = "关闭手机"
+		phone_oepn.title = "关闭手机"
+        phone.style.display = 'block';
+        phone.classList.add('is-visible');
+        phone.classList.remove('is-close');
+        phone.classList.add('is-open');
+        phone.addEventListener('animationend', () => {
+            phone.classList.remove('is-open');
+        }, { once: true });
+    }
+}
+
+
+
+// 
+// 3D手机视差
+// 
+const PHONE = document.querySelector("#phone");
+PHONE.addEventListener('mousemove', e => {
+  const r = PHONE.getBoundingClientRect();
+  const dx = (e.clientX - (r.left + r.width  / 2)) / (r.width  / 2);
+  const dy = (e.clientY - (r.top  + r.height / 2)) / (r.height / 2);
+
+  PHONE.style.transform =
+    `translate(0, -50%) perspective(1200px) rotateY(${dx * 3}deg) rotateX(${-dy * 2}deg)`;
+});
+
+PHONE.addEventListener('mouseleave', () => {
+  PHONE.style.transition = 'transform 0.8s ease';
+  PHONE.style.transform  = 'translate(0, -50%)';
+  setTimeout(() => PHONE.style.transition = '', 800);
+})

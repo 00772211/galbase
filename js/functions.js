@@ -1,19 +1,94 @@
+// 自动判断环境
+const isDev = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
 
+// 根据环境设置
+const DEBUG = isDev; 
+const API = isDev ? "http://127.0.0.1" : "https://api.galbase.top";
+const SRC = isDev ? "http://127.0.0.1/data/forums/3/data3/imgs" : "https://d3gal.dpdns.org/imgs"
+
+
+
+// 
+//	获取cookie
+// 
+const get_cookie = (name) => {
+	// 将cookie字符串拆分成一个名值对数组
+	const kvArray = document.cookie.split(';');
+
+	for (i=0; i < kvArray.length; i++) {
+
+		const kv = kvArray[i].split('=');
+		// 移除名称中的空格
+		const cookieName = kv[0].trim();
+
+		if (cookieName === name) {
+			return decodeURIComponent(kv[1]);
+		}
+	}
+	return null;
+}
+
+var COOKIE_FINGER = get_cookie("finger")
+if (!COOKIE_FINGER) {
+    COOKIE_FINGER = "首次访问"
+}
+
+
+
+// 
+// fetch请求
+// 
 async function fetch_API(
     method,
     url,
     query = {},
     body = null,
+    head = null,
     timeout = 10000
 ) {
 
+    //
     // Query 参数
-    const queryString = new URLSearchParams(query).toString();
+    //
+    const params = new URLSearchParams();
+
+    Object.entries(query).forEach(([key, value]) => {
+
+        // 忽略 null / undefined
+        if (value === null || value === undefined) {
+            return;
+        }
+
+        // 数组参数
+        if (Array.isArray(value)) {
+
+            value.forEach(v => {
+
+                if (v !== null && v !== undefined) {
+                    params.append(key, v);
+                }
+
+            });
+
+        } else {
+
+            params.append(key, value);
+
+        }
+
+    });
+
+    const queryString = params.toString();
+
     const fullUrl = queryString
         ? `${url}?${queryString}`
         : url;
 
+    //
+    // 超时控制
+    //
     const controller = new AbortController();
+
     const timeoutId = setTimeout(
         () => controller.abort(),
         timeout
@@ -21,68 +96,130 @@ async function fetch_API(
 
     try {
 
-        // headers
-        let headers = {
-            Accept: 'application/json',
-            finger: `${FINGER}`
+        //
+        // Headers
+        //
+        const headers = {
+            Accept: "application/json",
+            finger: COOKIE_FINGER
         };
 
-        // 登录
+        //
+        // 登录状态
+        //
         if (LOGIN === true) {
             headers.Authorization =
                 `Bearer ${SESSIONID}`;
         }
 
-        // body 自动处理
+        //
+        // 自定义 Header
+        //
+        if (
+            head !== null &&
+            typeof head === "object"
+        ) {
+            Object.assign(headers, head);
+        }
+
+        //
+        // Body 自动处理
+        //
         let requestBody = undefined;
 
         if (body !== null) {
 
-            // FormData（文件上传）
+            //
+            // 文件上传
+            //
             if (body instanceof FormData) {
+
                 requestBody = body;
 
             } else {
 
+                //
                 // JSON
-                headers['Content-Type'] =
-                    'application/json';
+                //
+                headers["Content-Type"] =
+                    "application/json";
 
                 requestBody =
                     JSON.stringify(body);
+
             }
+
         }
 
-        const response = await fetch(fullUrl, {
-            method,
-            headers,
-            body: requestBody,
-            signal: controller.signal
-        });
+        //
+        // 发起请求
+        //
+        const response = await fetch(
+            fullUrl,
+            {
+                method,
+                headers,
+                body: requestBody,
+                signal: controller.signal
+            }
+        );
 
         clearTimeout(timeoutId);
 
+        //
+        // HTTP 状态码检查
+        //
         if (!response.ok) {
-            throw new Error(
-                `请求失败，状态码：${response.status}`
-            );
+
+            let errorMessage =
+                `请求失败，状态码：${response.status}`;
+
+            try {
+
+                const errorData =
+                    await response.json();
+
+                if (
+                    errorData &&
+                    errorData.error
+                ) {
+                    errorMessage =
+                        errorData.error;
+                }
+
+            } catch (_) {}
+
+            throw new Error(errorMessage);
+
         }
 
+        //
+        // 无内容返回
+        //
+        if (response.status === 204) {
+            return null;
+        }
+
+        //
+        // JSON 返回
+        //
         return await response.json();
 
     } catch (err) {
 
         clearTimeout(timeoutId);
 
-        if (err.name === 'AbortError') {
-            throw new Error('请求超时');
+        if (
+            err.name === "AbortError"
+        ) {
+            throw new Error("请求超时");
         }
 
         throw err;
+
     }
+
 }
-
-
 
 
 // fetch_API("GET", `${API}/admin/remove_topic`).then(res => {
@@ -97,6 +234,69 @@ async function fetch_API(
 //     float_window.content(`${err.message}`)
 //     float_window.open()
 // })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 
+// 加载js
+// 
+function load_script(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+
+    script.src = src;
+    script.async = true;
+
+    script.onload = () => resolve(script);
+    script.onerror = () => reject(new Error(`Failed to load: ${src}`));
+
+    document.head.appendChild(script);
+  });
+}
+
+// 用法：await load_script("./effect.js");
+
 
 
 
@@ -119,12 +319,12 @@ class float_window_control {
 		var html = `
 			<div id="float_window">
 				<div class="board main_board">
-					<img src="/data/imgs/title_arc.png" class="title_arc">
+					<img src="${SRC}/title_arc.png" class="title_arc">
 					<div class="board_2nd">
 						<header>
-							<img src="/data/imgs/title_start.png" class="title_start">
+							<img src="${SRC}/title_start.png" class="title_start">
 							<ul class="title_content"></ul>
-							<img src="/data/imgs/title_end.png" class="title_end">
+							<img src="${SRC}/title_end.png" class="title_end">
 							<div class="buttons_">
 								<button onclick="float_window.close()" style="float: right;">关闭</button>
 							</div>
@@ -189,6 +389,7 @@ class float_window_control {
 			title_format = title_format + `<li>${char}</li>`
 		}
 		document.querySelector('#float_window .title_content').innerHTML = title_format
+        document.querySelector('#float_window .board').style.width = `50%`
 	}
 
 	// 修改内容
@@ -311,25 +512,7 @@ function fullscreen(element) {
 
 
 
-// 
-//	获取cookie
-// 
-const get_cookie = (name) => {
-	// 将cookie字符串拆分成一个名值对数组
-	const kvArray = document.cookie.split(';');
 
-	for (i=0; i < kvArray.length; i++) {
-
-		const kv = kvArray[i].split('=');
-		// 移除名称中的空格
-		const cookieName = kv[0].trim();
-
-		if (cookieName === name) {
-			return decodeURIComponent(kv[1]);
-		}
-	}
-	return null;
-}
 
 // 
 // 设置cookie
@@ -411,7 +594,6 @@ function small_lock() {
 
 
 
-
 function time_diff(input) {
   const timeZone = 'Asia/Shanghai';
   let date;
@@ -469,13 +651,15 @@ function time_diff(input) {
 function format_date(timestamp) {
     const date = new Date(timestamp * 1000);
 
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
 
-    return `${year}-${month}-${day}`;
+    return formatter.format(date); // en-CA 语言环境自动输出 YYYY-MM-DD
 }
-
 
 
 
@@ -670,6 +854,11 @@ async function fetch_DELETE(url, params = {}, timeout = 10000) {
 
 
 
+
+
+function log(...args) {
+    if (DEBUG) console.log(...args);
+}
 
 
 

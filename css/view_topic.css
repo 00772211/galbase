@@ -347,19 +347,151 @@
 }
 
 .sub_title {
-	margin: 0.5cqw;
-	padding: 2px;
-	font-size: 1.7cqw;
-	color: white;
-	font-weight: 700;
-	text-align: center;
-	border-radius: 5px;
-	border-color: #4E78E5;
-	text-shadow: 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5), 0 0 10px rgb(35, 153, 255, 0.5);
-	background-color: #6a7dc7;
-	box-sizing: border-box;
+    position: relative;
+    text-align: center;
+    margin: 2rem 0;
+    padding: 1cqw 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(248,249,255,.35) 0%,
+            rgba(232,238,255,.25) 50%,
+            rgba(248,249,255,.35) 100%
+        );
+
+    border-radius: 6px;
 }
 
+.title_text {
+    position: relative;
+    z-index: 5;
+    color: #4a72e8;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 1.7rem;
+    line-height: 1.5;
+    text-shadow:
+        0 0 8px rgba(35,153,255,.5),
+        0 0 20px rgba(35,153,255,.2);
+}
+
+/* 顶部线 */
+.sub_title::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 1px;
+
+    opacity: .55;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            #7aa4ff 10%,
+            #b8ccff 50%,
+            #7aa4ff 90%,
+            transparent 100%
+        );
+}
+
+/* 底部线 */
+.sub_title::after {
+    content: "";
+
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 1px;
+
+    opacity: 1;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            #7aa4ff 10%,
+            #d8e3ff 50%,
+            #7aa4ff 90%,
+            transparent 100%
+        );
+}
+
+.particle {
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: #a6c8ff;
+
+    filter: blur(1px);
+
+    animation:
+        float 7s ease-in-out infinite;
+}
+
+.particle.p1 {
+    left: 15%;
+    top: -8px;
+    animation-delay: 0s;
+}
+
+.particle.p2 {
+    left: 50%;
+    top: -5px;
+    animation-delay: 1.5s;
+}
+
+.particle.p3 {
+    left: 85%;
+    top: -10px;
+    animation-delay: 3s;
+}
+
+@keyframes float {
+
+    0%,100% {
+        transform:
+            translateY(0px)
+            translateX(0px);
+
+        opacity: .35;
+    }
+
+    25% {
+        transform:
+            translateY(-4px)
+            translateX(2px);
+
+        opacity: .7;
+    }
+
+    50% {
+        transform:
+            translateY(-9px)
+            translateX(4px);
+
+        opacity: 1;
+    }
+
+    75% {
+        transform:
+            translateY(-5px)
+            translateX(1px);
+
+        opacity: .6;
+    }
+}
 
 
 

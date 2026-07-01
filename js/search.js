@@ -62,6 +62,7 @@ const search_full = () => {
         float_window.open()
         return
     }
+    content = encodeURIComponent(content)
 
     DOM_state.textContent = "系统正在查询…请耐心等待"
 

@@ -1,7 +1,6 @@
 // 
 // 全局变量
 // 
-const API = "http://127.0.0.1:8005"
 var HTML
 var LOGIN = false
 var CONFIG
@@ -9,6 +8,7 @@ var NAV
 var BG
 var VERSION = ""
 var SCRIPT
+var COMMENTS = []
 float_window.create()
 
 
@@ -52,14 +52,13 @@ if (LOGIN == true) {
     const fpPromise = import('/js/finger.js').then(FingerprintJS => FingerprintJS.load())
     fpPromise.then(fp => fp.get()).then(result => {
         var FINGER = result.visitorId
-        const cookie_finger = get_cookie("finger")
 
         // 判断cookie中指纹是否存在
-        if (!cookie_finger) {
+        if (!COOKIE_FINGER) {
             set_cookie('finger', FINGER);
 
         // 指纹存在，判断指纹是否变更
-        } else if (cookie_finger != FINGER) {
+        } else if (COOKIE_FINGER != FINGER) {
             set_cookie('finger', FINGER);
         }
     })
@@ -71,7 +70,7 @@ if (LOGIN == true) {
 // 下放headers
 // 
 HTML = `
-    <img class="logo" src="/data/imgs/logo.png" title="返回主页" onclick="window.location.href = '/'" loading="lazy" alt="图片加载失败">
+    <img src="${SRC}/logo.png" class="logo" title="返回主页" onclick="window.location.href = '/'" loading="lazy" alt="图片加载失败">
 
     <div class="search">
         <input type="text" placeholder="整站全文搜索"><span onclick="search()"></span>
@@ -87,9 +86,11 @@ HTML = `
         </nav>
     </div>
 
-    <img class="avatar" src="" loading="lazy" alt="导航栏用户头像" hidden>
-    <a href="/msg" target="_blank"><span class="msg"><img src="/data/imgs/msg_none.png" loading="lazy" alt="图片加载失败"></span></a>
+    <img class="avatar" loading="lazy" alt="导航栏用户头像" hidden>
+    <a href="/msg" target="_blank"><span class="msg"><img src="${SRC}/msg_none.png" loading="lazy" alt="图片加载失败"></span></a>
     <span class="text broadcast">本站永久域名home.galbase.top 收藏不迷路</span>
+
+
 `
 document.querySelector(".header").innerHTML = HTML
 
@@ -138,7 +139,7 @@ function request_forum() {
         // 全局变量
         CONFIG = res['data']
         NAV = res['data']['nav']
-        
+
         // 版本信息
         if (VERSION != CONFIG['version']) {
             set_cookie("version", CONFIG['version'])
@@ -199,7 +200,11 @@ function request_forum() {
             float_window.content(`${CONFIG['maintenance_msg']}`)
             float_window.open()
             float_window.lock(3)
+            send_danmuku("公告", CONFIG['maintenance_msg'])
         }
+
+        // 更新季节特效
+        load_effect()
 	}).catch(err => {
 		console.log(`导航栏请求失败: ${err.message}`);
 		setTimeout(request_forum, 1000);
@@ -210,16 +215,39 @@ request_forum()
 
 
 // 
-// 未读显示
+// 请求必要的用户数据
 // 
-function request_msg_unread() {
-    fetch_API("GET", `${API}/user/msg/unread`).then(res => {
-        if (res['data']['unread'] == true) {
-            document.querySelector(".header .msg img").src = "/data/imgs/msg.png"
+const request_forum_user = () => {
+	fetch_API("GET", `${API}/forum/user`).then(res => {
+        log("用户配置数据", res)
+
+        if (res['error']) {
+            return
         }
-    }).catch(err => {
+
+        // 未读显示
+        if (res['data']['unread'] == true) {
+            document.querySelector(".header .msg img").src = `${SRC}/msg.png`
+        }
+
+        // 配置入cookie
+        if (res['data']['configs']) {
+            Object.entries(res['data']['configs']).forEach(([k, v]) => {
+                if (get_cookie(k) != v) {
+                    set_cookie(k, v)
+                }
+            })
+        }
+	}).catch(err => {
 
         // 登录过期
+        if (err.includes("登录过期")) {
+            float_window.title("提示")
+            float_window.content("登录过期！3秒后为您强制退登录！")
+            float_window.open()
+            quet()
+            return
+        }
         if (err.message.includes("401")) {
             float_window.title("提示")
             float_window.content("登录过期！3秒后为您强制退登录！")
@@ -227,12 +255,14 @@ function request_msg_unread() {
             quet()
             return
         }
-        console.log(`未读请求失败：${err.message}`);
-        setTimeout(request_msg_unread, 1000);
-    })
+
+		console.log(`用户数据请求失败: ${err.message}`)
+		setTimeout(request_forum_user, 1000);
+	})
 }
+
 if (LOGIN == true) {
-    request_msg_unread();
+    request_forum_user()
 }
 
 
@@ -253,6 +283,7 @@ document.querySelector('.search input').addEventListener('keypress', function(e)
 function search() {
     // 获取搜索内容
     var content = document.querySelector(".search input").value
+    content = encodeURIComponent(content)
 
     // 搜索内容不存在
     if (!content) {
@@ -276,3 +307,6 @@ const quet = () => {
     // 重新进入页面
     window.location.href = '/'
 }
+
+
+

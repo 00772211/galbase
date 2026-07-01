@@ -26,6 +26,31 @@ router = APIRouter(prefix="/topic", tags=["帖子"])
 
 
 
+@router.put("/{tid}/auther", summary="帖子所有权转移", description="必须是管理员执行。")
+async def API_remove_topic(
+    tid: int = Path(..., description="帖子ID"),
+    pool = Depends(get_db), 
+    config = Depends(get_config),
+    uid = Depends(get_uid_by_headers)
+):
+    if uid not in config['administrators']:
+        return fail("非管理员无权限更改！")
+    
+    fid = await get_fid(pool, tid)
+    table = f"topics_{fid}_{str(tid)[-1]}"
+    await db_update(
+        pool,
+        "UPDATE `{}` SET uid=%s WHERE tid=%s LIMIT 1".format(table),
+        (uid, tid)
+    )
+
+    await log_add(pool, None, f"帖子{tid}所有权转移至用户{uid}")
+    return success("帖子所有权转移成功！等待redis缓存30分钟清空后将显示您为帖子作者！")
+
+
+
+
+
 @router.get("/{tid}/score", summary="获取指定tid的帖子评分", description="如果填入用户就找特定用户的，不填就是总评分")
 async def API_get_score(
     tid: int = Path(..., description="帖子ID"),
@@ -264,13 +289,14 @@ async def API_download(
     else:
 
         # 日志记录
-        date = await get_date("all")
-        if not sessionID:
-            await log_add_source(f"{date} {finger}下载{tid}")
-        else:  
-            uid = await get_uid_by_sessionID(sessionID, rds, pool)
-            await log_add_source(f"{date} {uid}下载{tid}")
-            
+        await log_add(pool, rds, f"下载{tid}", sessionID, finger)
+
+        # date = await get_date("all")
+        # if not sessionID:
+        #     await log_add_source(f"{date} {finger}下载{tid}")
+        # else:  
+        #     uid = await get_uid_by_sessionID(sessionID, rds, pool)
+        #     await log_add_source(f"{date} {uid}下载{tid}")
         return success(row)
 
 
@@ -405,42 +431,39 @@ async def API_delete_collection(
 
 
 
-
-
-
-
-
-
-
-
-
 @router.post("", summary="发帖", description="发帖成功会返回一个tid")
 async def API_send_topic(
     model: send_topic_model,
     pool = Depends(get_db),
     rds = Depends(get_redis),
     config = Depends(get_config),
-    sessionID = Depends(get_sessionID)
+    uid = Depends(get_uid_by_headers)
 ):
-    if not sessionID:
-        return fail("该接口调用需要登录！")
-
     title = model.title
     content = model.content
     tags = model.tags
     cover = model.cover
     fid = model.fid
 
-    # 标题合法性
-    # if len(content.encode("utf-8")) > 255:
-    #     return fail("标题超过255个字节！请适当缩短标题！")
+    # 获取最新可分配tid
+    row = await db_fetchone(pool, "SELECT value FROM sys_auto_increment_value WHERE variable='tid' LIMIT 1")
+    tid = int(row['value'])
+
+    # 判断是否重复发帖
+    last_tid = tid - 1
+    last_fid = await get_fid(pool, last_tid)
+    if last_fid:
+        table = f"topics_{last_fid}_{str(last_tid)[-1]}"
+        row = await db_fetchone(pool, f"SELECT * FROM `{table}` WHERE tid={last_tid} LIMIT 1")
+        if row:
+            last_title = row['title']
+            if last_title == title:
+                return fail(f"重复发帖！重复tid:{last_tid}")
 
     # cover合法性
     if fid == "1-1" or fid == "1-2" or fid == "1-3" or fid == "1-4":
         if "|" in cover:
             return fail("封面预览图不合法！你所选的板块只支持单个图片做预览图！")
-
-    uid = await get_uid_by_sessionID(sessionID, rds, pool)
 
     # 根据今日发帖数去排列最近发帖
     ts = await timestamp()
@@ -448,10 +471,7 @@ async def API_send_topic(
     count = row['count']
     ts = ts + count
 
-    # 获取最新tid
-    row = await db_fetchone(pool, "SELECT value FROM sys_auto_increment_value WHERE variable='tid' LIMIT 1")
-    tid = int(row['value'])
-    sharding = str(tid)[-1]
+    # tid + 1
     await db_update(pool, "UPDATE sys_auto_increment_value SET value = value + 1 WHERE variable='tid'")
 
     # tags转成tagsID，backup是给拔作不推送计算使用的
@@ -460,6 +480,7 @@ async def API_send_topic(
 
         # "夏日": 31
         tags_json = await tags_to_ID(pool, tags.split("|"), True)
+        print(tags_json)
         place = ""
         tags = []
         for TAG, ID in tags_json.items():
@@ -472,6 +493,7 @@ async def API_send_topic(
         tags = "|".join(tags)
 
     # 帖子入库
+    sharding = str(tid)[-1]
     table = f"topics_{fid}_{sharding}"
     date = await get_date()
     await db_insert(
@@ -931,27 +953,52 @@ async def API_post_videos_chunk(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @router.get("/{tid}", summary="获取指定 tid 的帖子数据", description="")
 async def API_get_topic(
-        request: Request,
         tid: int = Path(..., description="帖子 ID"),
         tags_decode: bool = Query(True, description="是否解析 tagID 为对应的中文"),
         full: bool = Query(True, description="是否获取完整详细评分"),
         pool = Depends(get_db),
         rds = Depends(get_redis),
         config = Depends(get_config),
+        sessionID = Depends(get_sessionID),
         finger = Depends(get_finger)
     ):
 
     # 日志记录
-    identifier = finger if finger else await get_client_ip(request)
-    date = await get_date("all")
-    await log_add_source(f"{date} {identifier}访问帖子{tid}")
+    await log_add(pool, rds, "访问帖子{tid}", sessionID, finger)
 
     # 查redis缓存做浏览量+1
-    view_add = await rds.get(f"view:{tid}:{identifier}")
+    view_add = await rds.get(f"view:{tid}:{finger}")
     if not view_add:
-        await rds.set(f"view:{tid}:{identifier}", 1, ex=300)
+        await rds.set(f"view:{tid}:{finger}", 1, ex=300)
         allow_add = True
     else:
         allow_add = False

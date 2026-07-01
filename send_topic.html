@@ -25,17 +25,17 @@
 	<script src="/js/navigation_bar.js"></script>
 
 	<div class="board main_board else dynamic_height_flex" id="topic_DOM">
-		<img src="/data/imgs/title_arc.png" class="title_arc">
+		<img data-src="/title_arc.png" class="title_arc">
 		<div class="board_2nd">
 			<header>
-				<img src="/data/imgs/title_start.png" class="title_start">
+				<img data-src="/title_start.png" class="title_start">
 				<ul class="title_content">
 					<li>发</li>
 					<li>布</li>
 					<li>新</li>
 					<li>帖</li>
 				</ul>
-				<img src="/data/imgs/title_end.png" class="title_end">
+				<img data-src="/title_end.png" class="title_end">
 				<div class="buttons_">
 					<button id="send_topic_button" onclick="send_topic()">发帖</button>
 					<button onclick="topic_guide()">发帖指南</button>
@@ -52,20 +52,21 @@
 				</div><br>
 
 				<div class="function_line">
-					<div onclick="GUI_imgs_upload()"><img src="/data/imgs/img.png" loading="lazy" alt="图片加载失败"><br><span>图片上传</span></div>
-					<div onclick="GUI_upload_videos()"><img src="/data/imgs/video.png" loading="lazy" alt="图片加载失败"><br><span>视频上传</span></div>
-					<div onclick="alert('站长目前不知道这个功能能干嘛，暂不开发咯QWQ')"><img src="/data/imgs/file.png" loading="lazy" alt="图片加载失败"><br><span>附件上传</span></div>
-					<div onclick="alert('表情')"><img src="/data/imgs/emoji.png" loading="lazy" alt="图片加载失败"><br><span>表情</span></div>
-					<div onclick="insert_text('<br>')"><img src="/data/imgs/switch_line.png" loading="lazy" alt="图片加载失败"><br><span>换行</span></div>
-					<div onclick="insert_text('[_d ]')"><img src="/data/imgs/img_defense.png" loading="lazy" title="格式：[_d {_i1}{_i2}{_i3}]" alt="图片加载失败"><br><span>防剧透</span></div>
-					<div onclick="insert_text('{?pre\n\n?}')"><img src="/data/imgs/pre.png" loading="lazy" title="格式：{?pre *?}" alt="图片加载失败"><br><span>内容突出</span></div>
-					<div onclick="open_table_guide()"><img src="/data/imgs/table.png" loading="lazy" alt="图片加载失败"><br><span>表格</span></div>
-					<div onclick="insert_text('{_goto}')"><img src="/data/imgs/goto.png" loading="lazy" title="格式：{_goto1}" alt="图片加载失败"><br><span>站内跳转</span></div>
-					<div onclick="insert_text('{?info\n开发:\n流程:\n发行日期:\n适合游玩季节:\nlogo:\nopening:\n?}\n\n{?text\n「」「」\n?}')"><img src="/data/imgs/ai.png" loading="lazy" alt="图片加载失败"><br><span>资源收入</span></div>
-					<div onclick="open_music_gui()"><img src="/data/imgs/music.png" loading="lazy" alt="插入音乐"><br><span>插入音乐</span></div>
-					<div onclick="open_video_gui()"><img src="/data/imgs/video.png" loading="lazy" alt="插入视频"><br><span>插入视频</span></div>
-					<div onclick="insert_subtitle()"><img src="/data/imgs/sub_title.png" loading="lazy" alt="插入子标题"><br><span>子标题</span></div>
-					<div onclick="insert_text('{?MD5\n\n?}')"><img src="/data/imgs/security.png" loading="lazy" title="格式：{?MD5 *?}" alt="图片加载失败"><br><span>MD5</span></div>
+					<div onclick="GUI_imgs_upload()"><img data-src="/img.png" loading="lazy" alt="图片加载失败"><br><span>图片上传</span></div>
+					<div onclick="GUI_upload_videos()"><img data-src="/video.png" loading="lazy" alt="图片加载失败"><br><span>视频上传</span></div>
+					<div onclick="alert('站长目前不知道这个功能能干嘛，暂不开发咯QWQ')"><img data-src="/file.png" loading="lazy" alt="图片加载失败"><br><span>附件上传</span></div>
+					<div onclick="alert('表情')"><img data-src="/emoji.png" loading="lazy" alt="图片加载失败"><br><span>表情</span></div>
+					<div onclick="insert_text('<br>')"><img data-src="/switch_line.png" loading="lazy" alt="图片加载失败"><br><span>换行</span></div>
+					<div onclick="insert_text('[_d ]')"><img data-src="/img_defense.png" loading="lazy" title="格式：[_d {_i1}{_i2}{_i3}]" alt="图片加载失败"><br><span>防剧透</span></div>
+					<div onclick="insert_text('{?pre\n\n?}')"><img data-src="/pre.png" loading="lazy" title="格式：{?pre *?}" alt="图片加载失败"><br><span>内容突出</span></div>
+					<div onclick="open_table_guide()"><img data-src="/table.png" loading="lazy" alt="图片加载失败"><br><span>表格</span></div>
+					<div onclick="insert_text('{_goto}')"><img data-src="/goto.png" loading="lazy" title="格式：{_goto1}" alt="图片加载失败"><br><span>站内跳转</span></div>
+					<div onclick="GUI_gal_format_create()"><img data-src="/ai.png" loading="lazy" alt="图片加载失败"><br><span>资源收入</span></div>
+					<!-- <div onclick="insert_text('{?info\n开发:\n流程:\n发行日期:\n适合游玩季节:\nlogo:\nopening:\n?}\n\n{?text\n「」「」\n?}')"><img data-src="/ai.png" loading="lazy" alt="图片加载失败"><br><span>资源收入</span></div> -->
+					<div onclick="open_music_gui()"><img data-src="/music.png" loading="lazy" alt="插入音乐"><br><span>插入音乐</span></div>
+					<div onclick="open_video_gui()"><img data-src="/video.png" loading="lazy" alt="插入视频"><br><span>插入视频</span></div>
+					<div onclick="insert_subtitle()"><img data-src="/sub_title.png" loading="lazy" alt="插入子标题"><br><span>子标题</span></div>
+					<div onclick="insert_text('{?MD5\n\n?}')"><img data-src="/security.png" loading="lazy" title="格式：{?MD5 *?}" alt="图片加载失败"><br><span>MD5</span></div>
 				</div>
 
 				<textarea id="topic_content" placeholder="帖子内容"></textarea>

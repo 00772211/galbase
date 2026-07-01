@@ -208,31 +208,7 @@ async def API_sort_stories(
 
 
 
-
-
-@router.get("/{uid}", summary="获取对应uid的所有信息", description="如果用户不选择公开的话，将不获取。（未来上线）")
-async def API_get_user(
-    uid: int = Path(..., description="用户ID"),
-    config = Depends(get_config), 
-    rds = Depends(get_redis),
-    pool = Depends(get_db)
-):
-
-    # 查redis缓存
-    user_data = await rds.get(f"user:{uid}")
-    if user_data: return success(json.loads(user_data))
-
-    data = {}
-    data['user'] = await get_user_old(pool, config, uid)
-
-    # 缓存进redis
-    await rds.set(f"user:{uid}", json.dumps(data), ex=1800)
-
-    return success(data)
-
-
-
-@router.get("/{uid}/space", summary="获取对应uid的个人空间", description="如果用户不选择公开的话，将不获取。（未来上线）")
+@router.get("/{uid}/space", summary="获取对应uid的个人空间", description="暂时没有隐私化处理")
 async def API_get_space(
     uid: int = Path(..., description="用户ID"),
     config = Depends(get_config), 
@@ -328,12 +304,11 @@ async def get_msg(
         return success({"unread": False})
 
     # 查redis缓存
-    # state = await rds.get(f"unread:{sessionID}")
-    # if state: return success({"unread": json.loads(state)})
+    state = await rds.get(f"unread:{sessionID}")
+    if state: return success({"unread": json.loads(state)})
 
     uid = await get_uid_by_sessionID(sessionID, rds, pool)
     year = int(await get_date("year"))
-    print(233)
 
     # 查数据库
     row = await db_fetchone(pool, "SELECT EXISTS(SELECT 1 FROM {} WHERE uid=%s AND `read`=0) AS unread".format(f"logs_{year}"), (uid, ))
@@ -511,6 +486,9 @@ async def API_login(
 
             # 获取用户信息
             user = await get_user(pool, uid, True, "avatar", True)
+
+            # 清理redis缓存
+            await rds.delete(f"online")
             return success({
                 "uid": uid,
                 "sessionID": sessionID, 
@@ -521,7 +499,7 @@ async def API_login(
 
 
 
-@router.post("/avatar", summary="上传头像", description="会覆盖旧头像。")
+@router.post("/avatar", summary="上传头像", description="会覆盖旧头像。成功会返回头像链接。")
 async def API_post_avatar(
     file: UploadFile = File(..., description="图片文件"),
     pool = Depends(get_db),
@@ -558,4 +536,183 @@ async def API_post_avatar(
     # 删除源文件
     input.unlink(missing_ok=True)
 
-    return success("头像上传成功！可以按Ctrl+F5强制刷新显示新头像！")
+    # 更新数据库头像状态
+    table = f"users_data_{str(uid)[-1]}"
+    await db_update(
+        pool,
+        f"UPDATE {table} SET avatar=1 WHERE uid={uid} LIMIT 1",
+    )
+
+    return success({
+        "big": f"{config['chunk']['data3']}/{uid}_big.avif",
+        "medium": f"{config['chunk']['data3']}/{uid}_medium.avif",
+        "small": f"{config['chunk']['data3']}/{uid}_small.avif"
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@router.get("/config", summary="获取自己的用户配置", description="value没有做布偶值化处理，因为MySQL的布偶值tinyint")
+async def API_get_user_config(
+    pool = Depends(get_db),
+    uid = Depends(get_uid_by_headers)
+):
+    row = await get_user_config(pool, uid)
+    if not row:
+        return fail("您的用户配置还未拥有任何一个自定义配置。")
+    return success(row)
+
+
+
+@router.put("/config", summary="修改用户配置", description="必须正确传参配置字段，否则将报错。<br>我没给value设限类型是因为未来配置中有其他类型")
+async def API_put_user_config(
+    fetch: str = Body(..., embed=True, description="配置字段"),
+    value = Body(..., embed=True, description="配置值"),
+    pool = Depends(get_db),
+    rds = Depends(get_redis),
+    uid = Depends(get_uid_by_headers)
+):
+    # 判断字段安全性
+    rows = await db_rows(pool, "SHOW COLUMNS FROM users_configs_1")
+    fetchs = []
+    for row in rows:
+        fetchs.append(row['Field'])
+    fetchs.remove("uid")
+
+    if fetch not in fetchs:
+        text = ", ".join(fetchs)
+        return fail(f"字段不允许！允许的字段有：{text}")
+
+    # 特殊设置
+    if fetch == "remove_koharu":
+        level = await get_level(pool, uid)
+        if level < 2:
+            return fail("未满足打开条件！需要您升学至“中学一年生”。")
+
+    # 提交更改配置
+    try:
+        table = f"users_configs_{str(uid)[-1]}"
+        await db_update(
+            pool,
+            "INSERT INTO {} (uid, {}) VALUES (%s, %s) ON DUPLICATE KEY UPDATE {}=%s".format(table, fetch, fetch),
+            (uid, value, value)
+        )
+    except Exception as e:
+        return fail(f"错误：{e}")
+    
+    # 清理redis缓存
+    await rds.delete(f"forum/user:{uid}")
+    return success("更改成功")
+
+
+
+
+
+
+
+
+
+
+@router.put("/level_up", summary="升学", description="时间真是残酷呢…")
+async def API_put_level_up(
+    pool = Depends(get_db),
+    config = Depends(get_config),
+    uid = Depends(get_uid_by_headers)
+):
+    # 获取当年学年
+    table = f"users_data_{str(uid)[-1]}"
+    row = await db_fetchone(
+        pool,
+        "SELECT * FROM {} WHERE uid=%s LIMIT 1".format(table),
+        (uid, )
+    )
+    academic_year = row['academic_year']
+    
+
+    # 具体升学
+    if academic_year == "新生":
+        canned_count = int(row['canned_count'])
+        if canned_count <= 10:
+            return fail(f"您当前发帖数量为：{canned_count}个，未达到升学条件！")
+        else:
+            await db_update(
+                pool,
+                "UPDATE {} SET academic_year=%s WHERE uid=%s LIMIT 1".format(table),
+                ("中学一年生", uid)
+            )
+            return success(f"祝贺您升学成功！您的新学年将在30分钟后正式生效！")
+    
+    # 学年升学
+    else:
+        level = config['level'][academic_year]
+
+        # 等级限制
+        if level >= 12:
+            return fail("您已毕业！无需升学哦~")
+
+        next_level = level + 1
+        register_ts = await str_to_timestamp(row['register_time'])
+        ts = await timestamp(True)
+        online_ts = ts - register_ts
+
+        # 所需年份时间戳
+        require_ts = (next_level - 2) * 31536000
+        if online_ts >= require_ts:
+            next_academic_year = list(config['level'].keys())[list(config['level'].values()).index(next_level)]
+            await db_update(
+                pool,
+                "UPDATE {} SET academic_year=%s WHERE uid=%s LIMIT 1".format(table),
+                (next_academic_year, uid)
+            )
+            return success(f"祝贺您升学成功！您的新学年将在30分钟后正式生效！")
+
+        else:
+            return fail("未满足升学要求！")
+
+
+
+@router.get("/{uid}", summary="获取对应uid的所有信息", description="暂时没有隐私化处理")
+async def API_get_user(
+    uid: int = Path(..., description="用户ID"),
+    config = Depends(get_config), 
+    rds = Depends(get_redis),
+    pool = Depends(get_db)
+):
+    # 查redis缓存
+    user_data = await rds.get(f"user:{uid}")
+    if user_data: return success(json.loads(user_data))
+
+    data = {}
+    data['user'] = await get_user(pool, uid, True, "*", True, True)
+
+    # 缓存进redis
+    await rds.set(f"user:{uid}", json.dumps(data), ex=1800)
+    return success(data)
+
+

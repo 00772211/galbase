@@ -8,8 +8,6 @@ var NAV
 // 首页OP请求
 // 
 function request_opening() {
-	console.log(`${API}/forum/random`);
-	
 	fetch_API("GET", `${API}/forum/random`).then(res => {
 		document.querySelector(".home_page_op video").src = res.data.op;
 		document.querySelector(".home_page_op video").poster = res.data.preview;
@@ -29,23 +27,25 @@ request_opening();
 // 
 function request_newest() {
 	fetch_API("GET", `${API}/forum/newest`).then(res => {
+		log("最近更新的帖子", res)
+
 		const DOM_newest_topic = document.querySelector(".newest_topic")
 		res['data'].forEach((topic, i) => {
-			let day = time_diff(topic['date'])
+			let day = time_diff(topic['last_modify'])
 			let html = `
 				<div class="card">
 					<div class="auther">
-						<img class="avatar" src="${topic['auther']['avatar_small']}" alt="图片加载失败">
-						<img src="/data/imgs/user.png" style="height: 11px;margin-right: 5px" alt="图片加载失败">
+						<img src="${topic['auther']['avatar_small']}" class="avatar" alt="图片加载失败">
+						<img src="${SRC}/user.png" style="height: 11px;margin-right: 5px" alt="图片加载失败">
 						<a class="uname" href="/space/${topic['auther']['uid']}" title="点击进入 TA 的个人空间" target="_blank" style="color: #666666;">${topic['auther']['uname']}</a>
 					</div>
 					<div class="preview_content">
 						<a href="/topic/${topic['tid']}" title="点击进入帖子" target="_blank">${topic['title']}</a>
 					</div>
 					<div class="topic_info">
-						<span class="data"><img src="/data/imgs/date.png" alt="图片加载失败"> ${day}</span>
-						<span class="message"><img src="/data/imgs/reply.png" alt="图片加载失败">${topic['reply_count']}</span>
-						<span class="view"><img src="/data/imgs/view.png" alt="图片加载失败">${topic['view_count']}&emsp;</span>
+						<span class="data"><img src="${SRC}/date.png" alt="图片加载失败"> ${day}</span>
+						<span class="message"><img src="${SRC}/reply.png" alt="图片加载失败">${topic['reply_count']}</span>
+						<span class="view"><img src="${SRC}/view.png" alt="图片加载失败">${topic['view_count']}&emsp;</span>
 					</div>
 				</div>
 			`
@@ -105,9 +105,9 @@ function home() {
 
 			// 赋值
 			if (fid.includes("2-")) {
-				DOM.querySelector('.cover').src = `/data/imgs/board/${fid}.gif`
+				DOM.querySelector('.cover').src = `${SRC}/board/${fid}.gif`
 			} else {
-				DOM.querySelector('.cover').src = `/data/imgs/board/${fid}.png`
+				DOM.querySelector('.cover').src = `${SRC}/board/${fid}.png`
 			}
 			DOM.querySelector('.title').textContent = item.board
 			DOM.querySelector('.title').href = `/forum/${fid}/0`
@@ -150,14 +150,8 @@ resizeObserver.observe(op_player)
 //
 function request_online() {
 	fetch_API("GET", `${API}/forum/online`).then(res => {
+		log("在校学生", res)
 		const DOM_online = document.querySelector("#online ul")
-
-		// 添加自己
-		if (LOGIN == true) {
-			avatar_url = get_cookie("avatar_small")
-			HTML = `<li><img src="${avatar_url}" alt='在线用户头像'><a href='/space/${UID}' target='_blank'>${UNAME}（<span style='color:#00187C'>在校</span>）</a></li>`
-			DOM_online.insertAdjacentHTML("beforeend", HTML)
-		}
 
 		res['data'].forEach((user, i) => {
 			if (user['online'] == true) {

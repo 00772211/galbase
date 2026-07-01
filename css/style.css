@@ -33,6 +33,7 @@ body {
 	background-position: center top;
 	background-repeat: no-repeat;
 	background-attachment: fixed;
+	overflow-x: hidden;
 }
 
 u {
@@ -145,7 +146,7 @@ select:hover {
 	justify-content: space-between;
 	transition: background-color 0.25s ease, border-color 0.25s ease;
 	position: relative;
-	z-index: 100;
+	z-index: 900;
 }
 
 .select_main span img {
@@ -177,7 +178,7 @@ select:hover {
 	width: 100%;
 	background-color: white;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-	z-index: 100;
+	z-index: 900;
 	max-height: 200px;
 	overflow-y: auto;
 	border: 1px solid #ccc;
@@ -398,7 +399,7 @@ textarea {
 }
 
 .limit {
-	max-height: 40cqw;
+	max-height: 35cqw;
 	overflow-y: scroll;
 	overflow-x: hidden;
 }
@@ -597,23 +598,20 @@ textarea {
 	width: 100%;
 	background-color: rgba(0, 0, 0, 0.2);
 	transition: all 0.25s;
-	z-index: 999;
+	z-index: 800;
 }
 
 #float_window .board {
-	position: absolute;
+    position: absolute;
 	display: inline-block;
-	top: 0%;
-	left: 50%;
-	width: 50%;
-	max-height: 80%;
-	transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
 #float_window header {
 	cursor: move;
 }
-
 
 
 .wide_board {
@@ -651,6 +649,7 @@ textarea {
 
 /* 隐藏原生input */
 .checkbox input {
+	width: 0;
 	opacity: 0;
 	position: absolute;
 }
@@ -751,7 +750,6 @@ footer .t .dark {
 	left: 0;
 	width: 100%;
 	transition: transform 0.3s ease-out; /* 平滑过渡 */
-	will-change: transform;
 }
 
 
@@ -805,6 +803,229 @@ footer a:hover {
 	color: #7C56E2;
 	text-decoration-line: underline;
 }
+
+#phone_open {
+	position: fixed;
+	top: 50%;
+	right: 1cqw;
+	cursor: pointer;
+	transform: translate(0, -50%);
+	/* 常驻：呼吸光晕 + 浮动 */
+	animation: phone-float 3s ease-in-out infinite,
+	           phone-glow  3s ease-in-out infinite;
+	z-index: 900;
+}
+
+/* 浮动上下 */
+@keyframes phone-float {
+	0%, 100% { transform: translate(0, -50%);        }
+	50%       { transform: translate(0, calc(-50% - 6px)); }
+}
+
+/* 蓝海晶光晕呼吸 */
+@keyframes phone-glow {
+	0%, 100% {
+		filter: drop-shadow(0 0 4px rgba(100, 210, 255, 0.4))
+		        drop-shadow(0 0 8px rgba(60, 160, 240, 0.2));
+	}
+	50% {
+		filter: drop-shadow(0 0 10px rgba(100, 220, 255, 0.9))
+		        drop-shadow(0 0 20px rgba(60, 180, 255, 0.5))
+		        drop-shadow(0 0 35px rgba(30, 130, 220, 0.3));
+	}
+}
+
+/* 悬停：停住浮动，换成波纹扩散 + 高亮 */
+#phone_open:hover {
+	animation: phone-hover-glow 0.6s ease-in-out infinite alternate,
+	           phone-ripple     2.5s ease-in-out infinite; /* 改慢 */
+	transition: filter 0.2s;
+}
+
+@keyframes phone-hover-glow {
+	from {
+		filter: drop-shadow(0 0 6px rgba(140, 230, 255, 0.8))
+		        drop-shadow(0 0 14px rgba(80, 190, 255, 0.6));
+	}
+	to {
+		filter: drop-shadow(0 0 14px rgba(180, 245, 255, 1))
+		        drop-shadow(0 0 28px rgba(100, 210, 255, 0.8))
+		        drop-shadow(0 0 50px rgba(50, 160, 240, 0.4));
+	}
+}
+
+/* 悬停时轻微缩放脉冲，模拟水波荡漾 */
+@keyframes phone-ripple {
+	0%   { transform: translate(0, -50%) scale(1);    }
+	40%  { transform: translate(0, -50%) scale(1.08); }
+	70%  { transform: translate(0, -50%) scale(0.97); }
+	100% { transform: translate(0, -50%) scale(1);    }
+}
+
+
+#phone {
+  position: fixed;
+  width: 16cqw;
+  height: 32cqw;
+  top: 50%;
+  right: 5cqw;
+  transform: translate(0, -50%);
+  transform-style: preserve-3d;
+  z-index: 100;
+}
+
+#phone .shell {
+	width: 100%;
+}
+
+#phone .bg {
+  position: absolute; /* ❌ fixed → absolute */
+  top: 3.4cqw;
+  left: 0.8cqw;
+  width: 14.35cqw;
+  height: 25cqw;
+  z-index: 101;
+  box-sizing: border-box;
+}
+
+#phone .inner {
+  position: absolute; /* ❌ fixed → absolute */
+  padding: 8px;
+  top: 3.45cqw;
+  left: 0.85cqw;
+  width: 14.3cqw;
+  height: 25cqw;
+  z-index: 102;
+  box-sizing: border-box;
+}
+#phone .inner ul {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.8cqw;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+#phone .app {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 0.3cqw;
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+	opacity: 0;
+	transform: translateY(20px) scale(0.8);
+	animation: app-enter 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* 每个图标延迟 70ms 错开 */
+#phone .app:nth-child(1)  { animation-delay: 0.05s; }
+#phone .app:nth-child(2)  { animation-delay: 0.12s; }
+#phone .app:nth-child(3)  { animation-delay: 0.19s; }
+#phone .app:nth-child(4)  { animation-delay: 0.26s; }
+#phone .app:nth-child(5)  { animation-delay: 0.33s; }
+#phone .app:nth-child(6)  { animation-delay: 0.40s; }
+#phone .app:nth-child(7)  { animation-delay: 0.47s; }
+#phone .app:nth-child(8)  { animation-delay: 0.54s; }
+#phone .app:nth-child(9)  { animation-delay: 0.61s; }
+#phone .app:nth-child(10) { animation-delay: 0.68s; }
+#phone .app:nth-child(11) { animation-delay: 0.75s; }
+#phone .app:nth-child(12) { animation-delay: 0.82s; }
+#phone .app:nth-child(13) { animation-delay: 0.89s; }
+#phone .app:nth-child(14) { animation-delay: 0.96s; }
+#phone .app:nth-child(15) { animation-delay: 1.03s; }
+#phone .app:nth-child(16) { animation-delay: 1.10s; }
+#phone .app:nth-child(17) { animation-delay: 1.17s; }
+#phone .app:nth-child(18) { animation-delay: 1.24s; }
+#phone .app:nth-child(19) { animation-delay: 1.31s; }
+#phone .app:nth-child(20) { animation-delay: 1.38s; }
+
+@keyframes app-enter {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+/* hover：浮起 + 轻微高光 */
+#phone .app:hover img {
+  transform: translateY(-4px) scale(1.1);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(255,255,255,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  filter: brightness(1.08);
+}
+
+/* active：下压回弹 */
+#phone .app:active img {
+  transform: translateY(0) scale(0.9);
+  transition: transform 0.08s ease;
+}
+
+#phone .app img {
+	width: 2.5cqw;
+	height: 2.5cqw;
+	border-radius: 0.7cqw;
+	object-fit: cover;
+	box-shadow:
+		0 0.2cqw 0.6cqw rgba(0,0,0,.25);
+}
+
+#phone .app span {
+	font-size: 0.65cqw;
+	color: white;
+	text-align: center;
+	width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-shadow:
+		0 1px 3px rgba(0,0,0,.5);
+}
+
+
+/* 
+手机进入和退出
+*/
+@keyframes phone-open-in {
+  from {
+    opacity: 0;
+    transform: translate(0, -50%) perspective(800px)
+               translateX(60px) rotateY(-15deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%) perspective(800px)
+               translateX(0) rotateY(0deg) scale(1);
+  }
+}
+
+/* 退出：向右弹出 + 轻微压缩 */
+@keyframes phone-close-out {
+  from {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(0, -50%) perspective(800px)
+               translateX(80px) rotateY(20deg) scale(0.85);
+  }
+}
+
+#phone.is-open  { animation: phone-open-in  0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+#phone.is-close { animation: phone-close-out 0.35s cubic-bezier(0.36, 0, 0.66, -0.56) forwards; }
+
+
+
+
+
+
+
+
+
 
 .contact-info {
 	position: absolute;
@@ -884,7 +1105,77 @@ a { color: #4a72e8; text-decoration: none; transition: color 0.15s; } a:visited 
 .cb-slideshow li:nth-child(6) { animation: slide-show 36s infinite 30s; }
 
 
+.danmaku-wrap {
+	width: 0%;
+	height: 0%;
+	pointer-events: none;
+	background: aqua;
+	overflow: hidden;
+}
 
+.danmaku-item {
+	position: fixed;
+	white-space: nowrap;
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	padding: 5px 14px;
+	border-radius: 999px;
+	font-size: 14px;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	animation: slide linear forwards;
+	will-change: transform;
+	left: 100%;
+	cursor: pointer;
+	transition: box-shadow 0.2s ease;
+	pointer-events: auto;
+	user-select: none;
+	z-index: 998;
+}
+
+.danmaku-item:hover {
+	animation-play-state: paused !important;
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(42, 112, 184, 0.2);
+	z-index: 100 !important;
+}
+
+@keyframes slide {
+	0%   { transform: translateX(0); opacity: 0; }
+	3%   { opacity: 1; }
+	92%  { opacity: 1; }
+	100% { transform: translateX(calc(-1 * var(--travel, 120vw))); opacity: 0; }
+}
+
+.style-ghost   { background: rgba(255,255,255,0.65); color: #1a5a9a; border: 1px solid rgba(80,160,240,0.45);  backdrop-filter: blur(6px); }
+.style-ink     { background: rgba(10,50,110,0.85);   color: #c8e8ff; border: 1px solid rgba(80,160,255,0.35);  backdrop-filter: blur(4px); }
+.style-petal   { background: rgba(180,220,255,0.75); color: #0d3a70; border: 1px solid rgba(100,180,255,0.5);  backdrop-filter: blur(6px); }
+.style-sakura  { background: rgba(255,220,235,0.80); color: #8b1a4a; border: 1px solid rgba(255,150,190,0.50); backdrop-filter: blur(6px); }
+.style-night   { background: rgba(15,10,40,0.88);    color: #b8a0ff; border: 1px solid rgba(140,100,255,0.40); backdrop-filter: blur(4px); }
+.style-aurora  { background: rgba(10,60,50,0.82);    color: #7fffd4; border: 1px solid rgba(60,200,160,0.45);  backdrop-filter: blur(5px); }
+.style-sand    { background: rgba(255,245,220,0.80); color: #7a5520; border: 1px solid rgba(200,170,100,0.50); backdrop-filter: blur(6px); }
+.style-dusk    { background: rgba(80,20,60,0.82);    color: #ffb3d0; border: 1px solid rgba(220,100,160,0.40); backdrop-filter: blur(4px); }
+.style-frost   { background: rgba(220,240,255,0.72); color: #2a5080; border: 1px solid rgba(160,210,255,0.60); backdrop-filter: blur(8px); }
+.style-ember   { background: rgba(60,15,5,0.86);     color: #ffc090; border: 1px solid rgba(220,100,50,0.45);  backdrop-filter: blur(4px); }
+.style-my-mine { background: rgba(255,255,255,0.92); color: #2a80cc; border: 2px solid #2a80cc; font-weight: 500; }
+
+.danmaku-wrap .avatar {
+	width: 20px; height: 20px; border-radius: 50%;
+	display: flex; align-items: center; justify-content: center;
+	font-size: 10px; font-weight: 600; flex-shrink: 0;
+}
+.av-ghost  { background: #b0d8f8; color: #1a5a9a; }
+.av-ink    { background: #1a4a8a; color: #c8e8ff; }
+.av-petal  { background: #7abcee; color: #0d3a70; }
+.av-sakura { background: #f9b8d0; color: #8b1a4a; }
+.av-night  { background: #3a2070; color: #b8a0ff; }
+.av-aurora { background: #0e4a3c; color: #7fffd4; }
+.av-sand   { background: #e8d09a; color: #7a5520; }
+.av-dusk   { background: #6a1848; color: #ffb3d0; }
+.av-frost  { background: #a8d0f0; color: #2a5080; }
+.av-ember  { background: #5a2010; color: #ffc090; }
+.av-mine   { background: #2a80cc; color: #ffffff; }
 
 
 

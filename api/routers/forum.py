@@ -141,14 +141,18 @@ async def API_home(pool = Depends(get_db), config = Depends(get_config), rds = D
 
 
 @router.get("/online", summary="获取在校学生", description="由于获取的同时需要更新指定sessionID的最后登录时间，所以用POST请求传参sessionID，不传sessionID的话就不更新最后登录时间。")
-async def API_online(
+async def API_get_online(
     pool = Depends(get_db),
     rds = Depends(get_redis),
     config = Depends(get_config),
     sessionID = Depends(get_sessionID)
 ):
+    # 查redis缓存
+    redis = await rds.get(f"online")
+    if redis: return success(json.loads(redis))
+
     # 更新在线时间
-    ts = await timestamp()
+    ts = await timestamp(True)
     if sessionID:
         uid = await get_uid_by_sessionID(sessionID, rds, pool)
         await db_update(pool, "INSERT INTO online (uid, last_online) VALUES (%s, %s) ON DUPLICATE KEY UPDATE last_online=%s", (uid, ts, ts, ))
@@ -160,13 +164,10 @@ async def API_online(
         await db_update(pool, "UPDATE {} SET last_login_time=%s WHERE uid=%s LIMIT 1".format(table), (date, uid, ))
 
     # 获取在线用户
-    async with pool.acquire() as conn:
-        async with conn.cursor(asyncmy.cursors.DictCursor) as cur:
-            if sessionID:
-                await cur.execute("SELECT * FROM online WHERE uid !=%s ORDER BY last_online DESC", (uid, ))
-            else:
-                await cur.execute("SELECT * FROM online ORDER BY last_online DESC")
-            rows = await cur.fetchall()
+    rows = await db_rows(
+        pool,
+        "SELECT * FROM online ORDER BY last_online DESC"
+    )
 
     data = []
     for row in rows:
@@ -189,6 +190,8 @@ async def API_online(
             "online": state
         })
 
+    # 缓存进redis
+    await rds.set(f"online", json.dumps(data), ex=300)
     return success(data)
 
 
@@ -212,7 +215,7 @@ async def API_put_online(
     table = f"users_data_{sharding}"
 
     # 增加在线时间
-    ts = await timestamp()
+    ts = await timestamp(True)
     await db_update(pool, "UPDATE {} SET online_time = online_time + 5 WHERE uid=%s LIMIT 1".format(table), (uid, ))
     await db_update(pool, "INSERT INTO online (uid, last_online) VALUES (%s, %s) ON DUPLICATE KEY UPDATE last_online=%s", (uid, ts, ts, ))
 
@@ -242,10 +245,11 @@ async def API_request_topics(
     rds = Depends(get_redis)
 ):
     fid = fid.value
+    sort = sort.value
 
     # 查redis缓存
     filter_str = "+".join(f.value for f in filter)
-    topics = await rds.get(f"request_topics:{fid} {page} {sort.value} {filter_str}")
+    topics = await rds.get(f"request_topics:{fid} {page} {sort} {filter_str}")
     if topics: return success(json.loads(topics))
 
     # 获取板块名字
@@ -262,10 +266,11 @@ async def API_request_topics(
         sql_add += "AND no_push = 1 "
 
     # 获取帖子
-    async with pool.acquire() as conn:
-        async with conn.cursor(asyncmy.cursors.DictCursor) as cur:
-            await cur.execute("SELECT tid FROM `topics_index` WHERE fid=%s {} ORDER BY {} DESC LIMIT 20 OFFSET %s".format(sql_add, sort.value), (fid, page * 20, ))
-            rows = await cur.fetchall()
+    rows = await db_rows(
+        pool,
+        "SELECT tid FROM `topics_index` WHERE fid=%s {} ORDER BY {} DESC LIMIT 20 OFFSET %s".format(sql_add, sort),
+        (fid, page * 20, )
+    )
 
     # 循环每个tid
     data = []
@@ -304,7 +309,7 @@ async def API_request_topics(
             data.append(topic)
 
     # 缓存进redis
-    await rds.set(f"request_topics:{fid} {page} {sort.value} {filter_str}", json.dumps({"board": board, "topics": data}), ex=1800)
+    await rds.set(f"request_topics:{fid} {page} {sort} {filter_str}", json.dumps({"board": board, "topics": data}), ex=1800)
 
     return success({
         "board": board, 
@@ -314,7 +319,7 @@ async def API_request_topics(
 
 
 @router.get("", summary="每次访问页面都得请求的接口，包含了所有信息", description="30分钟缓存")
-async def API_get_forums(
+async def API_get_forum(
     pool = Depends(get_db), 
     config = Depends(get_config), 
     rds = Depends(get_redis),
@@ -322,7 +327,6 @@ async def API_get_forums(
     # 查redis缓存
     forum = await rds.get(f"forum")
     if forum: return success(json.loads(forum))
-
 
     # 获取随机6个壁纸
     bgs = []
@@ -358,8 +362,45 @@ async def API_get_forums(
         "bgs": bgs,
         "nav": nav,
         "version": config['version'],
+    	"leaf": config['leaf'],
+	    "summer": config['summer'],
+	    "autumn": config['autumn'],
+	    "snow": config['snow']
     }
 
     # 缓存进redis
     await rds.set(f"forum", json.dumps(data), ex=1800)
     return success(data)
+
+
+
+@router.get("/user", summary="每次访问页面都得请求的接口，包含了所有用户的信息", description="30分钟缓存")
+async def API_get_forum_user(
+    pool = Depends(get_db), 
+    rds = Depends(get_redis),
+    uid = Depends(get_uid_by_headers)
+):
+    # 查redis缓存
+    cache = await rds.get(f"forum/user:{uid}")
+    if cache: return success(json.loads(cache))
+
+    # 获取用户配置
+    data = {}
+    data['configs'] = await get_user_config(pool, uid)
+    if data['configs'] and data['configs']['uid']:
+        del data['configs']['uid']
+
+    # 获取未读状态
+    year = int(await get_date("year"))
+    row = await db_fetchone(
+        pool, 
+        "SELECT EXISTS(SELECT 1 FROM {} WHERE uid=%s AND `read`=0) AS unread".format(f"logs_{year}"), 
+        (uid, )
+    )
+    data['unread'] = bool(row["unread"])
+
+    # 缓存进redis
+    await rds.set(f"forum/user:{uid}", json.dumps(data), ex=1800)
+    return success(data)
+
+

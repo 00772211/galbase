@@ -1,16 +1,27 @@
 {
-	"注释": "实际生成环境中请前往 header.js 改API到实际的项目地址。本配置里的path请修改至网站的根目录。",
+	"注释": "实际生成环境中请前往 header.js 看看全局变量那个位置的API地址",
 	"localhost": true,
 	"random_avatars": 22,
 	"administrators": [1, 73],
-	"path": "",
-	"version": "2026-05-26",
+	"path": "D:\\bbs",
+	"linux_path": "/var/www/html",
+	"version": "2026-06-02-1",
 
 	"maintenance": false,
 	"maintenance_msg": "",
 
 	"new_yeah_lantern": false,
-	"now": false,
+	"leaf": false,
+	"summer": true,
+	"autumn": false,
+	"snow": false,
+
+	"touchgal": "https://www.touchgal.ink",
+	"touchgal_cookie": "",
+
+	"mysqldump": "/mysqldump.exe",
+	"linux_mysqldump": "mysqldump",
+	"black_list_tables": ["logs_2023", "logs_2024", "logs_2025", "logs_2026", "logs_2027", "logs_2028", "logs_2029", "logs_2030", "online", "users_sessions", "users_email", "wangpan_urls"],
 
 	"board": {
 		"1-1": "「资源收入繁华街」",
@@ -31,23 +42,49 @@
 		"data1": "https://data1.galbase.top",
 		"data2": "https://d2gal.dpdns.org",
 		"data3": "https://d3gal.dpdns.org",
-		"anime1": "https://galbase.b-cdn.net"
+		"data4": "https://d4gal.dpdns.org",
+		"anime1": "https://galbase.top/data/animes/1"
 	},
 
 	"chunk_localhost": {
-		"domain": "http://127.0.0.1:8000",
-		"api": "http://127.0.0.1:8005",
-		"data1": "http://127.0.0.1:8000/data/forums/1/data1",
-		"data2": "http://127.0.0.1:8000/data/forums/2/data2",
-		"data3": "http://127.0.0.1:8000/data/forums/3/data3",
-		"anime1": "http://127.0.0.1:8000/data/animes/1"
+		"domain": "https://galbase.top",
+		"api": "https://api.galbase.top",
+		"data1": "https://data1.galbase.top",
+		"data2": "https://d2gal.dpdns.org",
+		"data3": "https://d3gal.dpdns.org",
+		"data4": "https://d4gal.dpdns.org",
+		"anime1": "https://galbase.top/data/animes/1"
 	},
 
 	"chunk_range": {
 		"data1": [1, 863],
-		"data2": [864, 99999],
+		"data2": [864, 5585],
 		"data3": [999999, 9999999],
+		"data4": [5586, 99999],
 		"anime1": [1, 99999]
+	},
+
+	"level": {
+		"新生": 1,
+		"中学一年生": 2,
+		"中学二年生": 3,
+		"中学三年生": 4,
+		"高校一年生": 5,
+		"高校二年生": 6,
+		"高校三年生": 7,
+		"大学一年生": 8,
+		"大学二年生": 9,
+		"大学三年生": 10,
+		"大学四年生": 11,
+		"离校毕业生": 12,
+		"风纪委员": 13,
+		"学生会副会长": 14,
+		"学生会会长": 15,
+		"在校毕业生": 999,
+		"校长": 999,
+		"结姬学园": 111,
+		"白月学园": 111,
+		"星见学园": 111
 	},
 
 	"bgs": {

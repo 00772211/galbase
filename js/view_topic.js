@@ -13,14 +13,41 @@ if (LOGIN == true) {
 }
 var COLLECTION_STATE
 var HTML
+var REMOVE_KOHARU = false
 
 
 
+// 
 // 未登录取消功能按钮
+// 
 if (LOGIN == false) {
 	document.querySelector(".dynamic_height .buttons_").hidden = true
 }
 
+
+
+// 
+// 去掉小春
+// 
+if (get_cookie("remove_koharu") == true) {
+	REMOVE_KOHARU = true
+}
+
+
+
+// 
+// 取消图片防剧透
+// 
+if (get_cookie("no_imgs_defense") == true) {
+	const css = `
+		.defense_img img {
+			filter: blur(0px) !important;
+		}
+	`
+	const style = document.createElement("style");
+	style.textContent = css;
+	document.head.appendChild(style)
+}
 
 
 // 
@@ -37,6 +64,7 @@ function request_topic() {
 			}, 3000)
 			return
 		}
+		log("帖子数据", res)
 
 		TOPIC = res['data']['topic']
 		SCORES = res['data']['scores']
@@ -57,7 +85,7 @@ function request_topic() {
 		var send_topic_time_diff = time_diff(TOPIC['date'])
 		var last_modify_time_diff = time_diff(TOPIC['last_modify'])
 
-		if (time_diff == last_modify_time_diff) {
+		if (send_topic_time_diff == last_modify_time_diff) {
 			HTML = `浏览数: ${TOPIC['view_count']} 回复数: ${TOPIC['reply_count']} 发布于: ${TOPIC['date']}（${send_topic_time_diff}）`
 		} else {
 			HTML = `浏览数: ${TOPIC['view_count']} 回复数: ${TOPIC['reply_count']} 发布于: ${TOPIC['date']}（${send_topic_time_diff}） 最后更新: ${TOPIC['last_modify']}（${last_modify_time_diff}）`
@@ -96,8 +124,9 @@ function request_topic() {
 		update_rating()
 
 	}).catch(err => {
-		console.log(`帖子请求失败: ${err.message}`);
-		setTimeout(request_topic, 1000);
+		log("帖子请求失败", err)
+		send_danmuku("错误", "帖子请求失败！自动重试中！")
+		setTimeout(request_topic, 1000)
 	});
 }
 request_topic()
@@ -138,21 +167,21 @@ const update_nav_auther = () => {
 			<img src="" onclick="fullscreen(this)" loading="lazy" alt="图片加载失败">
 		</span>
 
-		<span onclick="boards_list(this, 101)"><img src="/data/imgs/arrow.png" style="height: 10px;" alt="图片加载失败">此生挚爱</span>
+		<span onclick="boards_list(this, 101)"><img src="${SRC}/arrow.png" style="height: 10px;" alt="图片加载失败">此生挚爱</span>
 		<span id="boards_list_101" style="display:block;">
 			<ul>
 				<li>${TOPIC['auther']['best_love_story']}</li>
 			</ul>
 		</span>
 
-		<span onclick="boards_list(this, 102)"><img src="/data/imgs/arrow.png" style="height: 10px;" alt="图片加载失败">正在推进</span>
+		<span onclick="boards_list(this, 102)"><img src="${SRC}/arrow.png" style="height: 10px;" alt="图片加载失败">正在推进</span>
 		<span id="boards_list_102" style="display:block;">
 			<ul>
 				<li>${TOPIC['auther']['playing_story']}</li>
 			</ul>
 		</span>
 
-		<span onclick="boards_list(this, 103)"><img src="/data/imgs/arrow.png" style="height: 10px;" alt="图片加载失败">强烈推荐</span>
+		<span onclick="boards_list(this, 103)"><img src="${SRC}/arrow.png" style="height: 10px;" alt="图片加载失败">强烈推荐</span>
 		<span id="boards_list_103" style="display:block;">
 			<ul id="recommend">
 			</ul>
@@ -238,12 +267,11 @@ const topic_content_parse = (content) => {
 		var vid = gal_info[5].match(/.+:(.*)/)[1]
 
 		// logo判定是否为动态
-		if (logo.length > 2) {
+		if (logo.length > 1) {
 
 			// .gif后缀 logo不做后缀
 			if (logo.includes(".gif")) {
 				var path = `Developer/${logo}`
-				
 			// 正常png后缀
 			} else {
 				var path = `Developer/${logo}.png`
@@ -266,7 +294,7 @@ const topic_content_parse = (content) => {
 		}
 
 		var content = content.replace(regex, `
-			<ul class="gal_info" style="background: url(/data/imgs/${path}) no-repeat center center">
+			<ul class="gal_info" style="background: url(${SRC}/${path}) no-repeat center center">
 				<li>主题:${tags_html}</li>
 				<li>开发:${DEVELOPER}</li>
 				<li>流程:${play_time}</li>
@@ -291,14 +319,40 @@ const topic_content_parse = (content) => {
 	})
 
 	// 
-	// 对图片code进行修饰，匹配 {_i*} 的正则表达式
+	// 对图片code进行修饰，匹配 {_i*|*} 的正则表达式
 	// 
-	var content = content.replace(/{(_i(\d+))}/g, `<img src="${TOPIC['url']}/$2.avif" id="_$2" onclick="fullscreen(this)" loading="lazy">`)
+	content = content.replace(
+		/{_i(\d+)(?:\|(\d+))?}/g,
+		(match, imgA, imgB) => {
+
+			const imgId = (REMOVE_KOHARU && imgB)
+				? imgB
+				: imgA
+
+			return `<img src="${TOPIC['url']}/${imgId}.avif"
+						id="_${imgId}"
+						onclick="fullscreen(this)"
+						loading="lazy">`
+		}
+	)
 
 	// 
-	// 对图片code进行修饰，匹配 {_i*} 的正则表达式
+	// 对图片code进行修饰，匹配 {_bigi*} 的正则表达式
 	// 
-	var content = content.replace(/{(_bigi(\d+))}/g, `<img class="big_img" src="${TOPIC['url']}/$2.avif" id="_$2" onclick="fullscreen(this)" loading="lazy">`)
+	content = content.replace(
+		/{_bigi(\d+)(?:\|(\d+))?}/g,
+		(match, imgA, imgB) => {
+
+			const imgId = (REMOVE_KOHARU && imgB)
+				? imgB
+				: imgA
+
+			return `<img class="big_img" src="${TOPIC['url']}/${imgId}.avif"
+						id="_${imgId}"
+						onclick="fullscreen(this)"
+						loading="lazy">`
+		}
+	)
 
 	// 
 	// 对视频code进行修饰，匹配 {_v*} 的正则表达式
@@ -365,7 +419,7 @@ type=2&id=$2&auto=0&height=66"></iframe>`)
 	// 对网易云音乐{_subtitle}进行修饰，匹配 {_wyy*} 的正则表达式
 	// 
 	var regex = /{_subtitle([^}]+)}/g
-	var content = content.replace(regex, `<div class="sub_title">$1</div>`)
+	var content = content.replace(regex, `<div class="sub_title"><span class="title_text">$1</span><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>`)
 
 	// 
 	// 对网易云音乐{_wyys}进行修饰，匹配 {_wyys*} 的正则表达式
@@ -405,7 +459,7 @@ type=2&id=$2&auto=0&height=66"></iframe>`)
 				<div class="prompt">解压密码错误看这：<br>下载时网络不稳定数据丢包造成压缩包损坏！避开晚高峰期下载或更换更加稳定的魔法重新下载即可！</div>
 
 				<div class="download">
-					<img src="/data/imgs/download.png" style="width: 64px;" onclick="download()" loading="lazy" alt="图片加载失败"><p class="space"></p>
+					<img src="${SRC}/download.png" style="width: 64px;" onclick="download()" loading="lazy" alt="图片加载失败"><p class="space"></p>
 					<span class="tag tag2" onclick="download()">获取该Galgame的下载链接<br>解压密码：${zip_psw}</span>
 				</div><br>
 			</div>
@@ -530,8 +584,9 @@ function request_reply() {
 			})
 		}
 	}).catch(err => {
-		console.log(`回复区请求失败: ${err.message}`);
-		setTimeout(request_reply, 1000);
+		log("回复区请求失败", err)
+		send_danmuku("错误", "回复区请求失败！自动重试中！")
+		setTimeout(request_reply, 1000)
 	});
 }
 request_reply()
@@ -553,8 +608,9 @@ function request_developer_works() {
 		}
 		
 	}).catch(err => {
-		console.log(`会社所有作品请求失败: ${err.message}`);
-		setTimeout(request_developer_works, 1000);
+		log("会社所有作品请求失败", err)
+		send_danmuku("错误", "会社所有作品请求失败！自动重试中！")
+		setTimeout(request_developer_works, 1000)
 	});
 }
 
@@ -617,8 +673,11 @@ function reply(rid='') {
 			location.reload()
 		}
 	}).catch(err => {
-		float_window.content(`${err.message}`)
-		float_window.open()
+		log("回复失败", err)
+		send_danmuku("错误", "回复失败！自动重试中！")
+		setTimeout(() => {
+			reply(rid)
+		}, 1000)
 	})
 }
 
@@ -655,8 +714,11 @@ const remove_reply = (rid) => {
 			}, 3000)
 		}
 	}).catch(err => {
-		float_window.content(`${err.message}`)
-		float_window.open()
+		log("删除失败", err)
+		send_danmuku("错误", "删除失败！自动重试中！")
+		setTimeout(() => {
+			remove_reply(rid)
+		}, 1000)
 	})
 }
 
@@ -677,6 +739,7 @@ const judment = () => {
 				<tbody>
 					<tr><td>该帖子被删。<br>执行者风纪执行+1次，被执行者风纪执行-1次。</td> <td><input type="text" id="judment_reason" placeholder="请输入风纪执行理由"><button onclick="remove_topic()">执行</button></td></tr>
 					<tr><td>移除本贴网盘链接。<br>仅能用于「资源收入繁华街」版块。</td> <td><button class="button2" onclick="remove_urls()">移除贴子网盘链接</button><br></td></tr>
+					<tr><td>帖子所有权转移。</td> <td><button class="button2" onclick="topic_auther_change()">确定转移</button><br></td></tr>
 				</tbody>
 			</table>
 		</div>
@@ -791,8 +854,9 @@ const download = () => {
 			`)
 		}
 	}).catch(err => {
-		float_window.content(`${err.message}`)
-		float_window.open()
+		log("下载请求失败", err)
+		send_danmuku("错误", "下载失败！自动重试中！")
+		setTimeout(download, 1000)
 	})
 }
 
@@ -882,8 +946,8 @@ const upload_urls = () => {
 			float_window.open()
 		}
 	}).catch(err => {
-		float_window.content(`${err.message}`)
-		float_window.open()
+		console.log("链接上传请求错误", err.message)
+		setTimeout(upload_urls, 1000);
 	})
 }
 
@@ -998,6 +1062,7 @@ const remove_urls = () => {
 // 
 const ep_goto = (num) => {
 	fetch_API("GET", `${API}/anime/${TID}/${num}`).then(res => {
+		log("动画集数请求", res)
 		if (res['data']) {
 			var current_ep = document.querySelector("#anime_player").src
 			if (current_ep.includes("mp4")) {
@@ -1027,6 +1092,15 @@ const update_rating = () => {
 		return
 	}
 
+	// 构建弹幕数据集
+	SCORES['full'].forEach((user, i) => {
+		COMMENTS.push({
+			"user": user['user']['uname'],
+			"text": `评分：${user['score']} 评价：${user['content']}`
+		})
+	})
+	scheduleBatch()
+
 	// 添加历史简评
 	SCORES['full'].forEach((user, i) => {
 		rating_data[user['user']['uname']] = user['score']
@@ -1034,15 +1108,15 @@ const update_rating = () => {
 			<div class="card" id="_rate1">
 				<div class="auther">
 					<img class="avatar" src="${user['user']['avatar_small']}" alt="图片加载失败">
-					<img src="/data/imgs/user.png" style="height: 11px;margin-right: 5px" alt="图片加载失败">
+					<img src="${SRC}/user.png" style="height: 11px;margin-right: 5px" alt="图片加载失败">
 					<a class="uname" href="/space/${user['uid']}" title="点击进入 TA 的个人空间" target="_blank" style="color: #666666;">${user['user']['uname']}</a>
 				</div>
 				<div class="content">
 					<span>${user['content']}</span>
 				</div>
 				<div class="info">
-					<span class="date"><img src="/data/imgs/date.png" alt="图片加载失败">${user['date']}</span>
-					<span class="message"><img src="/data/imgs/list.png" alt="图片加载失败">${user['state']}</span>
+					<span class="date"><img src="${SRC}/date.png" alt="图片加载失败">${user['date']}</span>
+					<span class="message"><img src="${SRC}/list.png" alt="图片加载失败">${user['state']}</span>
 				</div>
 			</div>
 		`
@@ -1138,8 +1212,15 @@ const update_rating = () => {
 // 修改评分或上传新评分
 // 
 const put_rating = () => {
+	if (LOGIN == false) {
+		float_window.title("错误")
+		float_window.content("未登录用户不能进行评分！")
+		float_window.open()
+		return
+	}
+
 	// 请求锁，防止过量请求
-	if (lock()) {
+	if (small_lock()) {
 		return
 	}
 
@@ -1180,8 +1261,8 @@ const put_rating = () => {
 			float_window.open()
 		}
 	}).catch(err => {
-		float_window.content(`${err.message}`)
-		float_window.open()
+		console.log("修改评分请求失败", err.message)
+		setTimeout(put_rating, 1000);
 	})
 }
 
@@ -1199,3 +1280,55 @@ const put_rating = () => {
 // 	play_box.classList.add("reply_play_box");
 // }
 
+
+
+// 
+// 手机APP
+// 
+document.addEventListener("DOMContentLoaded", () => {
+	const DOM_phone = document.querySelector("#phone .inner ul")
+	HTML = `
+		<li class="app" onclick="VNDB()">
+			<img src="${SRC}/phone_vndb.ico" alt="VNDB">
+			<span>VNDB</span>
+		</li>
+	`
+	DOM_phone.insertAdjacentHTML("beforeend", HTML)
+})
+
+
+
+// 
+// VNDB搜索
+// 
+const VNDB = () => {
+	float_window.title("VNDB")
+	float_window.content(`
+		开发中
+	`)
+	float_window.open()
+}
+
+
+// 
+// 帖子所有权转移
+// 
+const topic_auther_change = () => {
+	fetch_API("PUT", `${API}/topic/${TID}/auther`).then(res => {
+		log("帖子所有权转移", res)
+		if (res['error']) {
+			float_window.title("错误")
+			float_window.content(`${res['error']}`)
+			float_window.open()
+			return
+		}
+
+		float_window.title("提示")
+		float_window.content(`${res['data']}`)
+		float_window.open()
+	}).catch(err => {
+		log("帖子所有权转移失败", err)
+		send_danmuku("错误", "帖子所有权转移失败！自动重试中！")
+		setTimeout(topic_auther_change, 1000);
+	})
+}
